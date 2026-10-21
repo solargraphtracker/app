@@ -41,6 +41,10 @@ button.primary{background:var(--sun);border-color:var(--sun);color:#1a1205;font-
 .meta{color:var(--mute);font-size:.88rem}
 .meta a{color:var(--blue)}
 .acts{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap}
+#manual .acts{display:flex;gap:10px;justify-content:center;margin-top:10px}
+#manual .acts button{flex:1;display:flex;align-items:center;justify-content:center;padding:13px 10px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--ink);font:600 .9rem system-ui,sans-serif;text-transform:none;letter-spacing:0}
+#manual .acts #rpf{flex:0 1 66%}
+#manual #rp{flex:0 1 66%}
 #cbFoot{margin-top:16px;font-size:.78rem;opacity:.8}
 #cbActs .acts{margin-top:12px}
 button.cbb{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;margin-top:10px;padding:13px 14px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--ink);font:600 .95rem system-ui,sans-serif;text-transform:none;letter-spacing:0}
@@ -542,7 +546,7 @@ html:root[data-skin=sunrise] #srchBtn.on{background:#ffe066;color:#1a1040;border
 
 <div id="list"><section class="pane" id="p0"></section><section class="pane" id="p1"></section><section class="pane" id="p2"></section></div>
 <section class="screen" id="gallery"><h2>Gallery</h2><div id="galList"></div><button type="button" id="gfab" aria-label="Add photos">+</button><input id="galFile" class="vh" type="file" accept="image/*"></section>
-<section class="screen" id="account"><h2>Backup</h2><div class="sgroup"><div class="mh first">Cloud backup</div><p class="meta" id="cbNote"></p><div id="cbActs"></div><p class="meta" id="cbFoot">This is a backup, not live sync. It lets you get your cameras back on a new phone: sign in there with the same account and tap Restore. On iPhone, sign in from the home-screen app you actually use, because it keeps its data separate from Safari.</p></div><div class="sgroup"><div class="mh first">Manual backup</div><p class="meta" id="cloudNote" style="display:none"></p>
+<section class="screen" id="account"><h2>Backup</h2><div class="sgroup"><div class="mh first">Cloud backup</div><p class="meta" id="cbNote"></p><div id="cbActs"></div><p class="meta" id="cbFoot">This is a backup, not live sync. It lets you get your cameras back on a new phone: sign in there with the same account and tap Restore. On iPhone, sign in from the home-screen app you actually use, because it keeps its data separate from Safari.</p></div><div class="sgroup" id="manual"><div class="mh first">Manual backup</div><p class="meta" id="cloudNote" style="display:none"></p>
 <div class="acts"><button id="bk">Copy backup</button><button id="bkf">Save backup file</button></div>
 <p class="meta" id="bkNote">Copy backup is cameras only, with no photos. It is small enough to keep in Notes. Save backup file includes your photos and goes to your Files app.</p>
 <div class="acts"><button id="rpf">Restore from backup file</button></div><input type="file" id="rpFile" accept=".json,application/json,text/plain" style="display:none">
