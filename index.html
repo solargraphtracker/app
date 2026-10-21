@@ -1623,6 +1623,11 @@ $("rpf").addEventListener("click",function(){$("rpFile").click()});
 $("rpFile").addEventListener("change",function(e){var f=e.target.files[0];e.target.value="";if(!f)return;var r=new FileReader();r.onload=function(){restore(String(r.result||""))};r.onerror=function(){toast("Couldn’t read that file.")};r.readAsText(f)});
 $("rp").addEventListener("click",function(){var t=$("paste").value.trim();if(t){restore(t);$("paste").value=""}});
 
+function homeHint(){
+  var ua=navigator.userAgent||"",ios=/iPad|iPhone|iPod/.test(ua)||(navigator.platform==="MacIntel"&&navigator.maxTouchPoints>1),and=/Android/i.test(ua),mac=/Macintosh/.test(ua)&&!ios;
+  var how=ios?"Tap your browser’s <b>Share</b> button, then <b>Add to Home Screen</b>.":and?"Tap your browser’s menu (<b>⋮</b>), then <b>Add to Home screen</b> or <b>Install app</b>.":mac&&/Safari/.test(ua)&&!/Chrome|Edg|Firefox/.test(ua)?"In Safari, choose <b>File &gt; Add to Dock</b>.":"In Chrome or Edge, click the <b>install</b> icon at the right of the address bar.";
+  return how+" It opens like a normal app, full screen.|Your cameras are saved on this device, so sign in on the <b>Backup</b> tab to keep them safe and synced.";
+}
 var GSTEPS=[
 ["Welcome","What is a solargraph?","A solargraph is a DIY pinhole camera containing photographic paper. When left outside for weeks or months, the bright trails of the sun\u2019s arcs are \u201cburned\u201d into the paper. The result is a staggering long exposure image with a giant arc curved over the skyscape.|This app is designed to help you keep track of your cameras while they\u2019re out in the wild, waiting to be picked up again when they\u2019re done.|For a full guide, check out <a href=\"https://www.lomography.de/school/what-is-solargraphy-fa-2evjnoe3\" target=\"_blank\" rel=\"noopener\">Lomography: What is solargraphy</a>.",null],
 ["1 of 8","Cameras","This is where all your solargraphs live: spots you\u2019re scouting, cameras that are out right now, and your finished ones.","#nav [data-s=cameras]"],
@@ -1632,7 +1637,7 @@ var GSTEPS=[
 ["5 of 8","Add","Tap + to add a new spot or camera.","#fab"],
 ["6 of 8","Quick scan","Scan your paper negative with your camera to invert and flip it, for a quick peek at how it came out.","#navScan"],
 ["7 of 8","Gallery","A place for your finished, edited Solargraphs. Add photos with the + button, link them to a camera, and tap one to view it full screen, zoom in or see its info.","#nav [data-s=gallery]","gallery"],
-["8 of 8","Add to your home screen","Open this site in <b>Safari</b>, tap the <b>Share</b> button, then <b>Add to Home Screen</b>. It will open like a normal app, full screen. Your cameras stay saved on this phone, so keep a backup in the Backup tab now and then.",null]
+["8 of 8","Add to your home screen",homeHint(),null]
 ],gi=0;
 function showGuide(i){gi=i;var g=GSTEPS[i],want=g[4]||"cameras";if((document.body.getAttribute("data-screen")||"cameras")!==want||$("scan").classList.contains("on"))setScreen(want);var n=GSTEPS.length,box=$("guide").querySelector(".gbox"),h=$("gHole");$("gK").textContent=g[0];$("gT").textContent=g[1];$("gP").innerHTML=g[2].split("|").map(function(t){return "<p>"+t+"</p>"}).join("");$("gD").innerHTML=GSTEPS.map(function(x,k){return '<i class="'+(k===i?"on":"")+'"></i>'}).join("");$("gNext").textContent=i===n-1?"Got it":"Next";$("gSkip").style.display=i===n-1?"none":"";$("guide").classList.add("on");
  var t=g[3]?document.querySelector(g[3]):null;
