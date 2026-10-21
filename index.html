@@ -41,6 +41,9 @@ button.primary{background:var(--sun);border-color:var(--sun);color:#1a1205;font-
 .meta{color:var(--mute);font-size:.88rem}
 .meta a{color:var(--blue)}
 .acts{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap}
+#cbFoot{margin-top:16px;font-size:.78rem;opacity:.8}
+#cbActs .acts{margin-top:12px}
+button.cbb{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;margin-top:10px;padding:13px 14px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--ink);font:600 .95rem system-ui,sans-serif;text-transform:none;letter-spacing:0}
 .acts button{padding:6px 10px;font-size:.85rem}
 input[type=range]{padding:0;border:0;background:none;accent-color:var(--sun)}
 .risk{display:flex;align-items:center;gap:8px;font-size:.88rem;color:var(--mute)}
@@ -539,7 +542,7 @@ html:root[data-skin=sunrise] #srchBtn.on{background:#ffe066;color:#1a1040;border
 
 <div id="list"><section class="pane" id="p0"></section><section class="pane" id="p1"></section><section class="pane" id="p2"></section></div>
 <section class="screen" id="gallery"><h2>Gallery</h2><div id="galList"></div><button type="button" id="gfab" aria-label="Add photos">+</button><input id="galFile" class="vh" type="file" accept="image/*"></section>
-<section class="screen" id="account"><h2>Account</h2><div class="sgroup"><div class="mh first">Google Drive backup</div><p class="meta" id="gdNote"></p><div class="acts" id="gdActs"></div><p class="meta">Keep backing up from one device at a time. Home-screen apps on iPhone store their data separately from Safari, so connect Drive inside the app you actually use.</p></div><div class="sgroup"><div class="mh first">Dropbox backup</div><p class="meta" id="dbxNote"></p><div class="acts" id="dbxActs"></div></div></section>
+<section class="screen" id="account"><h2>Account</h2><div class="sgroup"><div class="mh first">Cloud backup</div><p class="meta" id="cbNote"></p><div id="cbActs"></div><p class="meta" id="cbFoot">This is a backup, not live sync. It lets you get your cameras back on a new phone: sign in there with the same account and tap Restore. On iPhone, sign in from the home-screen app you actually use, because it keeps its data separate from Safari.</p></div></section>
 <section class="screen" id="settings"><h2>Settings</h2><div class="sgroup"><div class="mh first">Help</div><button type="button" id="helpItem"><span class="mi">?</span>How it works</button></div><div class="sgroup"><div class="mh first">Themes</div><div id="themeMenu" role="group"></div></div><div class="sgroup"><div class="mh first">Sorting</div><div class="srt"><label for="srt0">Scouting</label><select id="srt0"></select></div><div class="srt"><label for="srt1">Live</label><select id="srt1"></select></div><div class="srt"><label for="srt2">Vault</label><select id="srt2"></select></div></div><div class="sgroup"><div class="mh first">Sound</div><div class="mrow" role="switch" aria-checked="false" aria-disabled="true"><span>Music</span><span class="tgl"><i></i></span></div><div class="mrow np" aria-disabled="true"><span>Now playing…</span></div><div class="hint" style="padding:0 10px 8px">Coming soon.</div></div><div class="sgroup"><div class="mh first">What3words</div><div class="w3x"><p>what3words gives every 3 metre square on Earth its own three-word address, like <b>///filled.count.soap</b>. It&rsquo;s much easier to note down and share than coordinates, and it&rsquo;s free to use.</p><p>In this app, it&rsquo;s how you record exactly where a camera is hidden. Find your spot in the what3words app, copy its three words, and paste them into the <b>what3words address</b> field when you add or edit a camera. You can paste a what3words link too.</p><a class="w3a" href="https://what3words.com" target="_blank" rel="noopener">Open what3words.com</a></div></div><div class="sgroup"><div class="mh first">Storage</div><div style="padding:2px 10px 10px"><div class="stbar"><i id="stFill"></i></div><div id="stTxt" class="meta"></div></div></div><section class="tools"><h3>Backup</h3>
 <p class="meta" id="cloudNote">Saved on this device only. A backup copy is worth keeping in Notes.</p>
 <div class="acts"><button id="bk">Copy backup</button><button id="bkf">Save backup file</button></div>
@@ -1082,19 +1085,7 @@ function gdOff(){
   try{if(gd.tok&&window.google&&google.accounts&&google.accounts.oauth2)google.accounts.oauth2.revoke(gd.tok,function(){})}catch(e){}
   gd.tok=null;gd.on=false;gd.need=false;gdSave();gdRender();toast("Disconnected. Your backup stays in Google Drive.");
 }
-function grpSync(){var g=$("gdNote"),d=$("dbxNote");if(!g||!d)return;g.parentNode.style.display=dbx.rt&&!gd.on?"none":"";d.parentNode.style.display=gd.on&&!dbx.rt?"none":""}
-function gdRender(){
-  var n=$("gdNote"),a=$("gdActs");if(!n||!a)return;grpSync();
-  var b=function(id,t,cls){return '<button type="button" id="'+id+'"'+(cls?' class="'+cls+'"':"")+'>'+t+'</button>'};
-  if(!GCID){n.textContent="Google Drive backup isn’t set up yet.";a.innerHTML="";return}
-  if(!gd.on){n.textContent="Back up your cameras and photos to your own Google Drive, automatically after every change. The backup sits in a hidden app folder that only this app can read.";a.innerHTML=b("gdOn","Connect Google Drive","primary");}
-  else{
-    var s=gd.busy?"Backing up…":gd.need?"Signed out. Tap Reconnect to continue backing up.":gd.last?"Backed up "+new Date(gd.last).toLocaleString([],{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"})+" ("+fmtB(gd.size)+")":"Connected. Waiting for the first backup.";
-    n.textContent="Connected to Google Drive. "+s;
-    a.innerHTML=(gd.need?b("gdNow","Reconnect","primary"):b("gdNow","Back up now"))+b("gdRes","Restore from Drive")+b("gdOff","Disconnect");
-  }
-  var x;(x=$("gdOn"))&&x.addEventListener("click",gdConnect);(x=$("gdNow"))&&x.addEventListener("click",function(){gd.need=false;gdBackup(true)});(x=$("gdRes"))&&x.addEventListener("click",gdRestore);(x=$("gdOff"))&&x.addEventListener("click",gdOff);
-}
+function gdRender(){cbRender()}
 var DBXKEY="5ne5sn335j2l3eg";
 var dbx={tok:null,exp:0,rt:"",busy:false,again:false,need:false,last:0,size:0,timer:null};
 try{dbx.rt=localStorage.getItem(KEY+"-dbx")||"";dbx.last=+localStorage.getItem(KEY+"-dbxlast")||0;dbx.size=+localStorage.getItem(KEY+"-dbxsize")||0}catch(e){}
@@ -1166,17 +1157,27 @@ function dbxReturn(){
     return dbxGet(dbx.tok).then(function(text){if(text!=null)restore(text,true)}).then(function(){dbx.busy=false;dbxBackup(true)});
   }).catch(function(){toast("Couldn’t sign in to Dropbox.")});
 }
-function dbxRender(){
-  var n=$("dbxNote"),a=$("dbxActs");if(!n||!a)return;grpSync();
-  var b=function(id,t,cls){return '<button type="button" id="'+id+'"'+(cls?' class="'+cls+'"':"")+'>'+t+'</button>'};
-  if(!DBXKEY){n.textContent="Dropbox backup isn’t set up yet.";a.innerHTML="";return}
-  if(!dbx.rt){n.textContent="Back up your cameras and photos to your own Dropbox, automatically after every change. The backup goes in an app folder (Apps > Solargraph tracker) that only this app writes to.";a.innerHTML=b("dbxOn","Connect Dropbox","primary")}
-  else{
-    var s=dbx.busy?"Backing up…":dbx.need?"Signed out. Tap Reconnect to continue backing up.":dbx.last?"Backed up "+new Date(dbx.last).toLocaleString([],{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"})+" ("+fmtB(dbx.size)+")":"Connected. Waiting for the first backup.";
-    n.textContent="Connected to Dropbox. "+s;
-    a.innerHTML=(dbx.need?b("dbxOn","Reconnect","primary"):b("dbxNow","Back up now"))+b("dbxRes","Restore from Dropbox")+b("dbxOff","Disconnect");
+function dbxRender(){cbRender()}
+function cbRender(){
+  var n=$("cbNote"),a=$("cbActs");if(!n||!a)return;
+  var G='<svg viewBox="0 0 48 48" width="20" height="20" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9.1 3.6l6.8-6.8C35.8 2.4 30.3 0 24 0 14.6 0 6.5 5.4 2.6 13.2l7.9 6.1C12.4 13.6 17.7 9.5 24 9.5z"/><path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v9h12.7c-.6 3-2.3 5.5-4.8 7.2l7.6 5.9c4.4-4.1 7-10.1 7-17.6z"/><path fill="#FBBC05" d="M10.5 28.7c-.5-1.4-.8-3-.8-4.7s.3-3.2.8-4.7l-7.9-6.1C.9 16.500 0 20.100 0 24s.9 7.500 2.600 10.800l7.900-6.100z"/><path fill="#34A853" d="M24 48c6.500 0 11.900-2.100 15.900-5.800l-7.600-5.900c-2.100 1.400-4.900 2.300-8.300 2.300-6.300 0-11.600-4.100-13.500-9.800l-7.900 6.100C6.500 42.600 14.600 48 24 48z"/></svg>',D='<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="#0061FF" d="M6 1.807L0 5.629l6 3.822 6.001-3.822L6 1.807zM18 1.807l-6 3.822 6 3.822 6-3.822-6-3.822zM0 13.274l6 3.822 6.001-3.822L6 9.452l-6 3.822zM18 9.452l-6 3.822 6 3.822 6-3.822-6-3.822zM6 18.371l6.001 3.822 6-3.822-6-3.822L6 18.371z"/></svg>';
+  var b=function(id,t,cls,ic){return '<button type="button" id="'+id+'" class="'+(cls||"cbb")+'">'+(ic||"")+'<span>'+t+'</span></button>'};
+  var when=function(t,z){return "Backed up "+new Date(t).toLocaleString([],{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"})+" ("+fmtB(z)+")"};
+  if(!GCID&&!DBXKEY){n.textContent="Cloud backup isn’t set up yet.";a.innerHTML="";return}
+  if(!gd.on&&!dbx.rt){
+    n.textContent="Back up your cameras and photos to your own cloud account. It saves automatically after every change.";
+    a.innerHTML=(GCID?b("gdOn","Continue with Google","cbb",G):"")+(DBXKEY?b("dbxOn","Continue with Dropbox","cbb",D):"");
+  }else if(gd.on){
+    var s=gd.busy?"Backing up…":gd.need?"Signed out. Tap Reconnect to continue.":gd.last?when(gd.last,gd.size):"Waiting for the first backup.";
+    n.textContent="Signed in with Google. "+s;
+    a.innerHTML='<div class="acts">'+(gd.need?b("gdOn","Reconnect","primary"):b("gdNow","Back up now","ab"))+b("gdRes","Restore","ab")+b("gdOff","Sign out","ab")+'</div>';
+  }else{
+    var s2=dbx.busy?"Backing up…":dbx.need?"Signed out. Tap Reconnect to continue.":dbx.last?when(dbx.last,dbx.size):"Waiting for the first backup.";
+    n.textContent="Signed in with Dropbox. "+s2;
+    a.innerHTML='<div class="acts">'+(dbx.need?b("dbxOn","Reconnect","primary"):b("dbxNow","Back up now","ab"))+b("dbxRes","Restore","ab")+b("dbxOff","Sign out","ab")+'</div>';
   }
-  var x;(x=$("dbxOn"))&&x.addEventListener("click",dbxConnect);(x=$("dbxNow"))&&x.addEventListener("click",function(){dbxBackup(true)});(x=$("dbxRes"))&&x.addEventListener("click",dbxRestore);(x=$("dbxOff"))&&x.addEventListener("click",dbxOff);
+  var x;(x=$("gdOn"))&&x.addEventListener("click",gdConnect);(x=$("gdNow"))&&x.addEventListener("click",function(){gd.need=false;gdBackup(true)});(x=$("gdRes"))&&x.addEventListener("click",gdRestore);(x=$("gdOff"))&&x.addEventListener("click",gdOff);
+  (x=$("dbxOn"))&&x.addEventListener("click",dbxConnect);(x=$("dbxNow"))&&x.addEventListener("click",function(){dbxBackup(true)});(x=$("dbxRes"))&&x.addEventListener("click",dbxRestore);(x=$("dbxOff"))&&x.addEventListener("click",dbxOff);
 }
 gdRender();dbxRender();
 function loadForm(i,putUp){
