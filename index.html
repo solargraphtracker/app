@@ -1631,7 +1631,7 @@ var GSTEPS=[
 ["4 of 8","Vault","Finished solargraphs, plus the ones that you lost along the way.","#tabs button:nth-child(3)"],
 ["5 of 8","Add","Tap + to add a new spot or camera.","#fab"],
 ["6 of 8","Quick scan","Scan your paper negative with your camera to invert and flip it, for a quick peek at how it came out.","#navScan"],
-["7 of 8","Gallery","Every scan you save, newest first. Add photos with the + button, link them to a camera, and tap one to view it full screen, zoom in or see its info.","#nav [data-s=gallery]","gallery"],
+["7 of 8","Gallery","A place for your finished, edited Solargraphs. Add photos with the + button, link them to a camera, and tap one to view it full screen, zoom in or see its info.","#nav [data-s=gallery]","gallery"],
 ["8 of 8","Add to your home screen","Open this site in <b>Safari</b>, tap the <b>Share</b> button, then <b>Add to Home Screen</b>. It will open like a normal app, full screen. Your cameras stay saved on this phone, so keep a backup in the Backup tab now and then.",null]
 ],gi=0;
 function showGuide(i){gi=i;var g=GSTEPS[i],want=g[4]||"cameras";if((document.body.getAttribute("data-screen")||"cameras")!==want||$("scan").classList.contains("on"))setScreen(want);var n=GSTEPS.length,box=$("guide").querySelector(".gbox"),h=$("gHole");$("gK").textContent=g[0];$("gT").textContent=g[1];$("gP").innerHTML=g[2].split("|").map(function(t){return "<p>"+t+"</p>"}).join("");$("gD").innerHTML=GSTEPS.map(function(x,k){return '<i class="'+(k===i?"on":"")+'"></i>'}).join("");$("gNext").textContent=i===n-1?"Got it":"Next";$("gSkip").style.display=i===n-1?"none":"";$("guide").classList.add("on");
