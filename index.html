@@ -56,7 +56,7 @@ body.adding #list,body.adding #fab{display:none}
 #fab{position:fixed;right:16px;bottom:calc(16px + env(safe-area-inset-bottom,0px));width:56px;height:56px;border-radius:50%;border:0;background:var(--sun);color:#1a1205;font-size:2rem;line-height:1;padding:0;box-shadow:0 2px 10px rgba(0,0,0,.3)}
 button.ghost{width:100%;margin-top:8px}
 .formtitle{font:600 1.25rem/1.2 "Iowan Old Style",Georgia,serif;margin:0 0 12px}
-#toast{position:fixed;left:16px;right:88px;bottom:calc(20px + env(safe-area-inset-bottom,0px));z-index:5;background:var(--ink);color:var(--bg);padding:10px 14px;border-radius:8px;font-size:.9rem;display:none}
+#toast{position:fixed;left:16px;right:88px;bottom:calc(20px + env(safe-area-inset-bottom,0px));z-index:5;background:var(--ink);color:var(--bg);padding:8px 13px;border-radius:10px;font-size:.78rem;line-height:1.35;opacity:.86;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);box-shadow:0 2px 10px rgba(0,0,0,.18);display:none}
 #toast.on{display:block}
 body.adding #toast{right:16px}
 .area{font-size:1.1rem;font-weight:500;margin:0 0 6px}
@@ -142,7 +142,7 @@ body.adding #scanBtn{display:none}
 #cropBox i{position:absolute;width:30px;height:30px;background:var(--sun);border:3px solid var(--bg);border-radius:50%;touch-action:none}
 #cropBox i[data-h=tl]{left:-14px;top:-14px}#cropBox i[data-h=tr]{right:-14px;top:-14px}#cropBox i[data-h=bl]{left:-14px;bottom:-14px}#cropBox i[data-h=br]{right:-14px;bottom:-14px}
 #toast{z-index:30}
-#toast button{margin-left:10px;padding:4px 10px;background:var(--sun);color:var(--onsun);border:0;font-size:.72rem;letter-spacing:.06em;text-transform:uppercase}
+#toast button{margin-left:8px;padding:3px 9px;background:var(--sun);color:var(--onsun);border:0;font-size:.72rem;letter-spacing:.06em;text-transform:uppercase}
 #scan{display:none;position:fixed;inset:0;z-index:20;overflow-y:auto;-webkit-overflow-scrolling:touch;background-color:var(--bg);padding:calc(16px + env(safe-area-inset-top,0px)) 16px 48px}
 #scan.on{display:block}
 #lists{display:none;padding-bottom:40px}
@@ -539,7 +539,7 @@ html:root[data-skin=sunrise] #srchBtn.on{background:#ffe066;color:#1a1040;border
 
 <div id="list"><section class="pane" id="p0"></section><section class="pane" id="p1"></section><section class="pane" id="p2"></section></div>
 <section class="screen" id="gallery"><h2>Gallery</h2><div id="galList"></div><button type="button" id="gfab" aria-label="Add photos">+</button><input id="galFile" class="vh" type="file" accept="image/*"></section>
-<section class="screen" id="account"><h2>Account</h2><p>Nothing here yet.</p></section>
+<section class="screen" id="account"><h2>Account</h2><div class="sgroup"><div class="mh first">Google Drive backup</div><p class="meta" id="gdNote"></p><div class="acts" id="gdActs"></div><p class="meta">Keep backing up from one device at a time. Home-screen apps on iPhone store their data separately from Safari, so connect Drive inside the app you actually use.</p></div></section>
 <section class="screen" id="settings"><h2>Settings</h2><div class="sgroup"><div class="mh first">Help</div><button type="button" id="helpItem"><span class="mi">?</span>How it works</button></div><div class="sgroup"><div class="mh first">Themes</div><div id="themeMenu" role="group"></div></div><div class="sgroup"><div class="mh first">Sorting</div><div class="srt"><label for="srt0">Scouting</label><select id="srt0"></select></div><div class="srt"><label for="srt1">Live</label><select id="srt1"></select></div><div class="srt"><label for="srt2">Vault</label><select id="srt2"></select></div></div><div class="sgroup"><div class="mh first">Sound</div><div class="mrow" role="switch" aria-checked="false" aria-disabled="true"><span>Music</span><span class="tgl"><i></i></span></div><div class="mrow np" aria-disabled="true"><span>Now playing…</span></div><div class="hint" style="padding:0 10px 8px">Coming soon.</div></div><div class="sgroup"><div class="mh first">What3words</div><div class="w3x"><p>what3words gives every 3 metre square on Earth its own three-word address, like <b>///filled.count.soap</b>. It&rsquo;s much easier to note down and share than coordinates, and it&rsquo;s free to use.</p><p>In this app, it&rsquo;s how you record exactly where a camera is hidden. Find your spot in the what3words app, copy its three words, and paste them into the <b>what3words address</b> field when you add or edit a camera. You can paste a what3words link too.</p><a class="w3a" href="https://what3words.com" target="_blank" rel="noopener">Open what3words.com</a></div></div><div class="sgroup"><div class="mh first">Storage</div><div style="padding:2px 10px 10px"><div class="stbar"><i id="stFill"></i></div><div id="stTxt" class="meta"></div></div></div><section class="tools"><h3>Backup</h3>
 <p class="meta" id="cloudNote">Saved on this device only. A backup copy is worth keeping in Notes.</p>
 <div class="acts"><button id="bk">Copy backup</button><button id="bkf">Save backup file</button></div>
@@ -615,7 +615,7 @@ function split(){
 function lsChars(){var n=0;try{for(var k in localStorage){if(Object.prototype.hasOwnProperty.call(localStorage,k))n+=k.length+(localStorage.getItem(k)||"").length}}catch(e){}return n}
 var LSMAX=5000000;
 function roomFor(chars){return !!assets||lsChars()+chars<LSMAX*0.95}
-function persist(){split();markPend();cloudSync();
+function persist(){split();markPend();cloudSync();driveSoon();
   try{localStorage.setItem(KEY,JSON.stringify(items));return true}
   catch(e){if(col){toast("This phone’s storage is full, so this change is only saved to your account. See Settings > Storage.");return true}toast("Couldn’t save. Browser storage may be full or blocked. Try a smaller photo.");return false}
 }
@@ -926,7 +926,7 @@ function parseLoose(t){
   for(var k=0;k<c.length;k++){try{return JSON.parse(s+c[k])}catch(e){}}
   throw 0;
 }
-function restore(text){
+function restore(text,quiet){
   try{
     text=String(text).replace(/[\u201C\u201D]/g,'"').replace(/[\u2018\u2019]/g,"'");
     var a0=text.indexOf("{"),a1=text.lastIndexOf("}");
@@ -943,7 +943,7 @@ function restore(text){
     });
     var gadded=0,gh={};gal.forEach(function(g){gh[g.id]=1});
     (Array.isArray(d.gallery)?d.gallery:[]).forEach(function(g){if(!g||!g.id||!g.thumb||gh[g.id]||String(g.thumb).indexOf("data:image/")!==0)return;gal.push({id:String(g.id),ts:+g.ts||Date.now(),link:String(g.link||""),thumb:g.thumb,w:+g.w||undefined,h:+g.h||undefined,full:(typeof g.full==="string"&&g.full.indexOf("/_blob/")===0)?g.full:undefined});gadded++});
-    if(!added&&!gadded){toast("Nothing new to restore from that text.");return}
+    if(!added&&!gadded){if(!quiet)toast("Nothing new to restore from that text.");return}
     if(gadded){gsave();renderGallery();gsync()}
     if(persist()){render();toast("Restored "+added+(added===1?" camera":" cameras")+(gadded?" and "+gadded+(gadded===1?" photo":" photos"):"")+"."+(lostPhotos?" Photos couldn’t be restored.":""))}
   }catch(e){toast("That doesn’t look like a solargraph backup.")}
@@ -1005,6 +1005,95 @@ function initCloud(){
     });
   }).catch(function(){});
 }
+var GCID="";
+var gd={tok:null,exp:0,timer:null,busy:false,again:false,need:false,on:false,last:0,size:0};
+try{gd.on=localStorage.getItem(KEY+"-drive")==="1";gd.last=+localStorage.getItem(KEY+"-drivelast")||0;gd.size=+localStorage.getItem(KEY+"-drivesize")||0}catch(e){}
+function gdSave(){try{localStorage.setItem(KEY+"-drive",gd.on?"1":"0");localStorage.setItem(KEY+"-drivelast",String(gd.last));localStorage.setItem(KEY+"-drivesize",String(gd.size))}catch(e){}}
+function gdLib(cb){if(window.google&&google.accounts&&google.accounts.oauth2)return cb(true);var s=document.createElement("script");s.src="https://accounts.google.com/gsi/client";s.onload=function(){cb(true)};s.onerror=function(){cb(false)};document.head.appendChild(s)}
+function gdToken(interactive,cb){
+  if(gd.tok&&Date.now()<gd.exp-60000)return cb(gd.tok);
+  if(!GCID)return cb(null);
+  gdLib(function(ok){
+    if(!ok)return cb(null);
+    var done=false,fin=function(t){if(done)return;done=true;cb(t)};
+    try{
+      var tc=google.accounts.oauth2.initTokenClient({client_id:GCID,scope:"https://www.googleapis.com/auth/drive.appdata",
+        callback:function(r){if(r&&r.access_token){gd.tok=r.access_token;gd.exp=Date.now()+(+r.expires_in||3600)*1000;gd.need=false;fin(gd.tok)}else fin(null)},
+        error_callback:function(){fin(null)}});
+      tc.requestAccessToken({prompt:interactive?"":"none"});
+    }catch(e){fin(null)}
+  });
+}
+function gdH(t){return {Authorization:"Bearer "+t}}
+function gdFind(t){return fetch("https://www.googleapis.com/drive/v3/files?spaces=appDataFolder&q="+encodeURIComponent("name='solargraph-backup.json'")+"&fields=files(id,modifiedTime,size)",{headers:gdH(t)}).then(function(r){if(!r.ok)throw r.status;return r.json()}).then(function(j){return j.files&&j.files[0]||null})}
+function gdGet(t,id){return fetch("https://www.googleapis.com/drive/v3/files/"+id+"?alt=media",{headers:gdH(t)}).then(function(r){if(!r.ok)throw r.status;return r.text()})}
+function gdPut(t,id,text){
+  var meta=id?{}:{name:"solargraph-backup.json",parents:["appDataFolder"]};
+  var url="https://www.googleapis.com/upload/drive/v3/files"+(id?"/"+id:"")+"?uploadType=resumable";
+  return fetch(url,{method:id?"PATCH":"POST",headers:{Authorization:"Bearer "+t,"Content-Type":"application/json; charset=UTF-8"},body:JSON.stringify(meta)})
+    .then(function(r){if(!r.ok)throw r.status;var loc=r.headers.get("Location");if(!loc)throw 0;return fetch(loc,{method:"PUT",headers:{"Content-Type":"application/json"},body:text})})
+    .then(function(r){if(!r.ok)throw r.status;return r.json()});
+}
+function gdFail(e){
+  gd.busy=false;
+  if(e===401){gd.tok=null;gd.need=true;gdRender();return}
+  if(e===403){toast("Google Drive said no. Check that the Drive API is switched on for this app.")}
+  else toast("Couldn’t back up to Google Drive. Will try again after your next change.");
+  gdRender();
+}
+function gdBackup(manual){
+  if(!gd.on)return;
+  if(gd.busy){gd.again=true;return}
+  if(gd.need&&!manual){gdRender();return}
+  gd.busy=true;gdRender();
+  gdToken(!!manual,function(t){
+    if(!t){gd.busy=false;gd.need=true;gdRender();if(manual)toast("Couldn’t sign in to Google.");return}
+    var text=backupData(true);
+    gdFind(t).then(function(f){return gdPut(t,f&&f.id,text)}).then(function(){
+      gd.last=Date.now();gd.size=text.length;gd.busy=false;gdSave();gdRender();
+      if(manual)toast("Backed up to Google Drive ("+fmtB(text.length)+").");
+      if(gd.again){gd.again=false;driveSoon()}
+    }).catch(gdFail);
+  });
+}
+function driveSoon(){if(!gd.on)return;clearTimeout(gd.timer);gd.timer=setTimeout(function(){gdBackup(false)},4000)}
+function gdConnect(){
+  if(!GCID){toast("Google Drive isn’t set up yet.");return}
+  gdToken(true,function(t){
+    if(!t){toast("Couldn’t sign in to Google.");return}
+    gd.on=true;gd.need=false;gdSave();gd.busy=true;gdRender();
+    gdFind(t).then(function(f){
+      if(!f)return null;
+      return gdGet(t,f.id).then(function(text){restore(text,true)})
+    }).then(function(){gd.busy=false;gdBackup(true)}).catch(gdFail);
+  });
+}
+function gdRestore(){
+  gdToken(true,function(t){
+    if(!t){toast("Couldn’t sign in to Google.");return}
+    gdFind(t).then(function(f){
+      if(!f){toast("No backup found in your Google Drive yet.");return}
+      return gdGet(t,f.id).then(function(text){restore(text)})
+    }).catch(function(e){if(e===401)gd.tok=null;toast("Couldn’t read your Google Drive backup.")});
+  });
+}
+function gdOff(){
+  try{if(gd.tok&&window.google&&google.accounts&&google.accounts.oauth2)google.accounts.oauth2.revoke(gd.tok,function(){})}catch(e){}
+  gd.tok=null;gd.on=false;gd.need=false;gdSave();gdRender();toast("Disconnected. Your backup stays in Google Drive.");
+}
+function gdRender(){
+  var n=$("gdNote"),a=$("gdActs");if(!n||!a)return;
+  var b=function(id,t,cls){return '<button type="button" id="'+id+'"'+(cls?' class="'+cls+'"':"")+'>'+t+'</button>'};
+  if(!GCID){n.textContent="Google Drive backup isn’t set up yet.";a.innerHTML="";return}
+  if(!gd.on){n.textContent="Back up your cameras and photos to your own Google Drive, automatically after every change. The backup sits in a hidden app folder that only this app can read.";a.innerHTML=b("gdOn","Connect Google Drive","primary");}
+  else{
+    var s=gd.busy?"Backing up…":gd.need?"Signed out. Tap Reconnect to continue backing up.":gd.last?"Backed up "+new Date(gd.last).toLocaleString([],{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"})+" ("+fmtB(gd.size)+")":"Connected. Waiting for the first backup.";
+    n.textContent="Connected to Google Drive. "+s;
+    a.innerHTML=(gd.need?b("gdNow","Reconnect","primary"):b("gdNow","Back up now"))+b("gdRes","Restore from Drive")+b("gdOff","Disconnect");
+  }
+  var x;(x=$("gdOn"))&&x.addEventListener("click",gdConnect);(x=$("gdNow"))&&x.addEventListener("click",function(){gd.need=false;gdBackup(true)});(x=$("gdRes"))&&x.addEventListener("click",gdRestore);(x=$("gdOff"))&&x.addEventListener("click",gdOff);
+}
+gdRender();
 function loadForm(i,putUp){
   editId=i.id;photoData=null;orig={type:i.type,paper:i.paper};fillPicks();
   $("name").value=i.name;$("area").value=i.area||"";$("idea").checked=putUp?false:!i.start;
@@ -1144,7 +1233,7 @@ function gsavePend(){try{localStorage.setItem(KEY+"-gpend",JSON.stringify(gpend)
 function gSnap(){gLast={};gal.forEach(function(g){gLast[g.id]=gsig(g)})}
 function gMark(){var ch=false,ids={};gal.forEach(function(g){ids[g.id]=1;var s=gsig(g);if(gLast[g.id]!==s){gpend.up[g.id]=s;delete gpend.del[g.id];ch=true}gLast[g.id]=s});Object.keys(gLast).forEach(function(id){if(!ids[id]){delete gLast[id];delete gpend.up[id];gpend.del[id]=1;ch=true}});if(ch)gsavePend()}
 function gload(){try{gal=JSON.parse(localStorage.getItem(GKEY)||"[]");if(!Array.isArray(gal))gal=[]}catch(e){gal=[]}}
-function gsave(){gMark();try{localStorage.setItem(GKEY,JSON.stringify(gal));return true}catch(e){toast("Couldn’t save the gallery on this device. Browser storage may be full.");return false}}
+function gsave(){gMark();driveSoon();try{localStorage.setItem(GKEY,JSON.stringify(gal));return true}catch(e){toast("Couldn’t save the gallery on this device. Browser storage may be full.");return false}}
 function gsig(g){return JSON.stringify(g,Object.keys(g).sort())}
 function gdoc(g){var d={};Object.keys(g).forEach(function(k){if(k==="id"||g[k]===undefined)return;if(k==="full"&&/^data:/.test(g[k]||""))return;d[k]=g[k]});return d}
 function gpush(g){
