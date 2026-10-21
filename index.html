@@ -1005,7 +1005,7 @@ function initCloud(){
     });
   }).catch(function(){});
 }
-var GCID="";
+var GCID="393643903194-6io671jsa5061jpc4iq6mqq44ru1plf6.apps.googleusercontent.com";
 var gd={tok:null,exp:0,timer:null,busy:false,again:false,need:false,on:false,last:0,size:0};
 try{gd.on=localStorage.getItem(KEY+"-drive")==="1";gd.last=+localStorage.getItem(KEY+"-drivelast")||0;gd.size=+localStorage.getItem(KEY+"-drivesize")||0}catch(e){}
 function gdSave(){try{localStorage.setItem(KEY+"-drive",gd.on?"1":"0");localStorage.setItem(KEY+"-drivelast",String(gd.last));localStorage.setItem(KEY+"-drivesize",String(gd.size))}catch(e){}}
