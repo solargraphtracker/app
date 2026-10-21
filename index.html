@@ -404,7 +404,15 @@ body.viewing{overflow:hidden}
 #vSheet .row2{display:flex;gap:8px;margin-top:6px}
 #vSheet .k{color:var(--mute)}
 #vSheet .acts{margin-top:12px}
-.mrow{display:flex;align-items:center;justify-content:space-between;padding:11px 10px;font:600 .9rem system-ui,sans-serif;opacity:.45}
+.mrow{display:flex;align-items:center;justify-content:space-between;padding:11px 10px;font:600 .9rem system-ui,sans-serif;color:var(--ink)}
+.mrow[aria-disabled=true]{opacity:.45}
+#musT{cursor:pointer}
+.tgl,.tgl i{transition:background .2s,left .2s}
+#musT[aria-checked=true] .tgl{background:var(--sun)}
+#musT[aria-checked=true] .tgl i{left:20px;background:var(--onsun)}
+.vrow{padding-top:2px;padding-bottom:6px}
+.vrow input{flex:0 1 62%;accent-color:var(--sun);margin:0}
+#musNp{color:var(--mute)}
 .tgl{width:40px;height:22px;border-radius:11px;background:var(--line);position:relative}
 .tgl i{position:absolute;left:2px;top:2px;width:18px;height:18px;border-radius:50%;background:var(--mute)}
 #toast{z-index:50}
@@ -566,7 +574,7 @@ html:root[data-skin=sunrise] #srchBtn.on{background:#ffe066;color:#1a1040;border
 <section class="screen" id="account"><h2>Backup</h2><div class="sgroup"><div class="mh first">Cloud sync</div><p class="meta" id="cbNote"></p><div id="cbActs"></div><p class="meta" id="cbFoot">Syncs automatically. On iPhone, sign in from the home-screen app, as it keeps its data separate from Safari.</p></div><div id="manual"><p class="meta" id="cloudNote" style="display:none"></p><p class="meta" id="bkNote" style="display:none"></p>
 <div class="mcols"><div class="sgroup mcol"><div class="mh first">Backup as text</div><button type="button" id="bk">Copy backup</button><p class="meta">Cameras only, no photos. Fits in Notes.</p><div class="mrest"><textarea id="paste" rows="3" placeholder="Paste backup text here"></textarea><button type="button" id="rp">Restore from text</button></div></div>
 <div class="sgroup mcol"><div class="mh first">Backup as file</div><button type="button" id="bkf">Save backup file</button><p class="meta">With photos. Saves to your Files app.</p><div class="mrest"><p class="meta mpick">Pick a saved backup file.</p><button type="button" id="rpf">Restore from file</button><input type="file" id="rpFile" accept=".json,application/json,text/plain" style="display:none"></div></div></div></div></section>
-<section class="screen" id="settings"><h2>Settings</h2><div class="sgroup"><div class="mh first">Help</div><button type="button" id="helpItem"><span class="mi">?</span>How it works</button></div><div class="sgroup"><div class="mh first">Themes</div><div id="themeMenu" role="group"></div></div><div class="sgroup"><div class="mh first">Sorting</div><div class="srt"><label for="srt0">Scouting</label><select id="srt0"></select></div><div class="srt"><label for="srt1">Live</label><select id="srt1"></select></div><div class="srt"><label for="srt2">Vault</label><select id="srt2"></select></div></div><div class="sgroup"><div class="mh first">Sound</div><div class="mrow" role="switch" aria-checked="false" aria-disabled="true"><span>Music</span><span class="tgl"><i></i></span></div><div class="mrow np" aria-disabled="true"><span>Now playing…</span></div><div class="hint" style="padding:0 10px 8px">Coming soon.</div></div><div class="sgroup"><div class="mh first">What3words</div><div class="w3x"><p>what3words gives every 3 metre square on Earth its own three-word address, like <b>///filled.count.soap</b>. It&rsquo;s much easier to note down and share than coordinates, and it&rsquo;s free to use.</p><p>In this app, it&rsquo;s how you record exactly where a camera is hidden. Find your spot in the what3words app, copy its three words, and paste them into the <b>what3words address</b> field when you add or edit a camera. You can paste a what3words link too.</p><a class="w3a" href="https://what3words.com" target="_blank" rel="noopener">Open what3words.com</a></div></div><div class="sgroup"><div class="mh first">Storage</div><div style="padding:2px 10px 10px"><div class="stbar"><i id="stFill"></i></div><div id="stTxt" class="meta"></div></div></div></section>
+<section class="screen" id="settings"><h2>Settings</h2><div class="sgroup"><div class="mh first">Help</div><button type="button" id="helpItem"><span class="mi">?</span>How it works</button></div><div class="sgroup"><div class="mh first">Themes</div><div id="themeMenu" role="group"></div></div><div class="sgroup"><div class="mh first">Sorting</div><div class="srt"><label for="srt0">Scouting</label><select id="srt0"></select></div><div class="srt"><label for="srt1">Live</label><select id="srt1"></select></div><div class="srt"><label for="srt2">Vault</label><select id="srt2"></select></div></div><div class="sgroup"><div class="mh first">Sound</div><div class="mrow" id="musT" role="switch" aria-checked="false" tabindex="0"><span>Music</span><span class="tgl"><i></i></span></div><div class="mrow vrow"><label for="musV">Volume</label><input type="range" id="musV" min="0" max="100" step="1" value="60"></div><div class="mrow np" id="musNp"><span></span></div></div><div class="sgroup"><div class="mh first">What3words</div><div class="w3x"><p>what3words gives every 3 metre square on Earth its own three-word address, like <b>///filled.count.soap</b>. It&rsquo;s much easier to note down and share than coordinates, and it&rsquo;s free to use.</p><p>In this app, it&rsquo;s how you record exactly where a camera is hidden. Find your spot in the what3words app, copy its three words, and paste them into the <b>what3words address</b> field when you add or edit a camera. You can paste a what3words link too.</p><a class="w3a" href="https://what3words.com" target="_blank" rel="noopener">Open what3words.com</a></div></div><div class="sgroup"><div class="mh first">Storage</div><div style="padding:2px 10px 10px"><div class="stbar"><i id="stFill"></i></div><div id="stTxt" class="meta"></div></div></div></section>
 
 <button id="fab" aria-label="Add solargraph">+</button>
 <button type="button" id="srchBtn" aria-label="Search" aria-expanded="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M20 20l-4-4"/></svg></button>
@@ -1311,6 +1319,44 @@ function cbRender(){
   (x=$("syNow"))&&x.addEventListener("click",function(){syncNow(true)});
   (x=$("syUndo"))&&x.addEventListener("click",function(){if(this.getAttribute("data-c")){undoSync();return}this.setAttribute("data-c","1");this.textContent="Tap again to undo the last sync"});
 }
+
+/* background music: Web Audio so volume and fades work on iPhone too */
+(function(){
+  var SRC="music/redgreenblue.mp3",TITLE="6lemon – redgreenblue";
+  var on=true,vol=0.6;try{var m=localStorage.getItem(KEY+"-music");if(m!==null)on=m==="1";var v=localStorage.getItem(KEY+"-vol");if(v!==null&&v!=="")vol=Math.min(1,Math.max(0,+v))}catch(e){}
+  var ctx=null,gain=null,src=null,buf=null,loading=null,playing=false,failed=false;
+  var level=function(){return vol*vol};
+  function ensure(){if(ctx)return true;var C=window.AudioContext||window.webkitAudioContext;if(!C)return false;try{ctx=new C();gain=ctx.createGain();gain.gain.value=0;gain.connect(ctx.destination);return true}catch(e){return false}}
+  function ramp(to,sec){if(!ctx)return;var t=ctx.currentTime,g=gain.gain;try{g.cancelScheduledValues(t);g.setValueAtTime(g.value,t);g.linearRampToValueAtTime(to,t+sec)}catch(e){g.value=to}}
+  function load(){if(buf)return Promise.resolve(buf);if(loading)return loading;
+    loading=fetch(SRC).then(function(r){if(!r.ok)throw 0;return r.arrayBuffer()}).then(function(a){return new Promise(function(res,rej){var pr=ctx.decodeAudioData(a,res,rej);if(pr&&pr.catch)pr.catch(function(){})})}).then(function(b){buf=b;return b});
+    loading.catch(function(){loading=null});return loading}
+  function start(){
+    if(!on||document.visibilityState==="hidden"||!ensure())return;
+    if(ctx.state==="suspended"&&ctx.resume)ctx.resume();
+    if(playing){ramp(level(),1.5);return}
+    load().then(function(b){if(!on||playing)return;src=ctx.createBufferSource();src.buffer=b;src.loop=true;src.connect(gain);gain.gain.value=0;src.start(0);playing=true;failed=false;ramp(level(),3);ui()}).catch(function(){failed=true;ui()});
+  }
+  function stop(){if(!playing)return;ramp(0,.8);var s=src;src=null;playing=false;setTimeout(function(){try{s.stop()}catch(e){}},900);ui()}
+  function ui(){
+    var t=$("musT"),v=$("musV"),n=$("musNp");if(!t)return;
+    t.setAttribute("aria-checked",on?"true":"false");v.value=Math.round(vol*100);
+    n.firstChild.textContent=!on?"Music is off.":failed?"Couldn’t load the music.":playing?"Now playing: "+TITLE:"Starts when you tap the app.";
+  }
+  function save(){try{localStorage.setItem(KEY+"-music",on?"1":"0");localStorage.setItem(KEY+"-vol",String(vol))}catch(e){}}
+  function toggle(){on=!on;save();if(on)start();else stop();ui()}
+  $("musT").addEventListener("click",toggle);
+  $("musT").addEventListener("keydown",function(e){if(e.key===" "||e.key==="Enter"){e.preventDefault();toggle()}});
+  $("musV").addEventListener("input",function(){vol=this.value/100;save();if(playing)ramp(level(),.08)});
+  var kick=function(){if(on&&!playing)start()};
+  ["pointerdown","touchend","keydown"].forEach(function(ev){document.addEventListener(ev,kick,{capture:true,passive:true})});
+  document.addEventListener("visibilitychange",function(){
+    if(!ctx)return;
+    if(document.visibilityState==="hidden"){if(playing){ramp(0,.3);setTimeout(function(){if(document.visibilityState==="hidden"&&ctx.suspend)ctx.suspend()},350)}}
+    else if(on){if(ctx.resume)ctx.resume();if(playing){gain.gain.value=0;ramp(level(),2)}}
+  });
+  ui();
+})();
 cbRender();
 
 function loadForm(i,putUp){
