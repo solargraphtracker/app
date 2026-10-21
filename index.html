@@ -1058,6 +1058,7 @@ function gdBackup(manual){
 }
 function driveSoon(){dbxSoon();if(!gd.on)return;clearTimeout(gd.timer);gd.timer=setTimeout(function(){gdBackup(false)},4000)}
 function gdConnect(){
+  if(dbx.rt){toast("Disconnect Dropbox first.");return}
   if(!GCID){toast("Google Drive isn’t set up yet.");return}
   gdToken(true,function(t){
     if(!t){toast("Couldn’t sign in to Google.");return}
@@ -1081,8 +1082,9 @@ function gdOff(){
   try{if(gd.tok&&window.google&&google.accounts&&google.accounts.oauth2)google.accounts.oauth2.revoke(gd.tok,function(){})}catch(e){}
   gd.tok=null;gd.on=false;gd.need=false;gdSave();gdRender();toast("Disconnected. Your backup stays in Google Drive.");
 }
+function grpSync(){var g=$("gdNote"),d=$("dbxNote");if(!g||!d)return;g.parentNode.style.display=dbx.rt&&!gd.on?"none":"";d.parentNode.style.display=gd.on&&!dbx.rt?"none":""}
 function gdRender(){
-  var n=$("gdNote"),a=$("gdActs");if(!n||!a)return;
+  var n=$("gdNote"),a=$("gdActs");if(!n||!a)return;grpSync();
   var b=function(id,t,cls){return '<button type="button" id="'+id+'"'+(cls?' class="'+cls+'"':"")+'>'+t+'</button>'};
   if(!GCID){n.textContent="Google Drive backup isn’t set up yet.";a.innerHTML="";return}
   if(!gd.on){n.textContent="Back up your cameras and photos to your own Google Drive, automatically after every change. The backup sits in a hidden app folder that only this app can read.";a.innerHTML=b("gdOn","Connect Google Drive","primary");}
@@ -1100,6 +1102,7 @@ function dbxSave(){try{if(dbx.rt)localStorage.setItem(KEY+"-dbx",dbx.rt);else lo
 function dbxRedir(){return location.origin+location.pathname.replace(/index\.html$/,"")}
 function b64u(buf){var s="",a=new Uint8Array(buf);for(var k=0;k<a.length;k++)s+=String.fromCharCode(a[k]);return btoa(s).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"")}
 function dbxConnect(){
+  if(gd.on){toast("Disconnect Google Drive first.");return}
   if(!DBXKEY){toast("Dropbox isn’t set up yet.");return}
   var rnd=new Uint8Array(32);crypto.getRandomValues(rnd);var ver=b64u(rnd);
   crypto.subtle.digest("SHA-256",new TextEncoder().encode(ver)).then(function(h){
@@ -1164,7 +1167,7 @@ function dbxReturn(){
   }).catch(function(){toast("Couldn’t sign in to Dropbox.")});
 }
 function dbxRender(){
-  var n=$("dbxNote"),a=$("dbxActs");if(!n||!a)return;
+  var n=$("dbxNote"),a=$("dbxActs");if(!n||!a)return;grpSync();
   var b=function(id,t,cls){return '<button type="button" id="'+id+'"'+(cls?' class="'+cls+'"':"")+'>'+t+'</button>'};
   if(!DBXKEY){n.textContent="Dropbox backup isn’t set up yet.";a.innerHTML="";return}
   if(!dbx.rt){n.textContent="Back up your cameras and photos to your own Dropbox, automatically after every change. The backup goes in an app folder (Apps > Solargraph tracker) that only this app writes to.";a.innerHTML=b("dbxOn","Connect Dropbox","primary")}
