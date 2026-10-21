@@ -1093,7 +1093,7 @@ function gdRender(){
   }
   var x;(x=$("gdOn"))&&x.addEventListener("click",gdConnect);(x=$("gdNow"))&&x.addEventListener("click",function(){gd.need=false;gdBackup(true)});(x=$("gdRes"))&&x.addEventListener("click",gdRestore);(x=$("gdOff"))&&x.addEventListener("click",gdOff);
 }
-var DBXKEY="";
+var DBXKEY="5ne5sn335j2l3eg";
 var dbx={tok:null,exp:0,rt:"",busy:false,again:false,need:false,last:0,size:0,timer:null};
 try{dbx.rt=localStorage.getItem(KEY+"-dbx")||"";dbx.last=+localStorage.getItem(KEY+"-dbxlast")||0;dbx.size=+localStorage.getItem(KEY+"-dbxsize")||0}catch(e){}
 function dbxSave(){try{if(dbx.rt)localStorage.setItem(KEY+"-dbx",dbx.rt);else localStorage.removeItem(KEY+"-dbx");localStorage.setItem(KEY+"-dbxlast",String(dbx.last));localStorage.setItem(KEY+"-dbxsize",String(dbx.size))}catch(e){}}
