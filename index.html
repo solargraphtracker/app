@@ -539,7 +539,7 @@ html:root[data-skin=sunrise] #srchBtn.on{background:#ffe066;color:#1a1040;border
 
 <div id="list"><section class="pane" id="p0"></section><section class="pane" id="p1"></section><section class="pane" id="p2"></section></div>
 <section class="screen" id="gallery"><h2>Gallery</h2><div id="galList"></div><button type="button" id="gfab" aria-label="Add photos">+</button><input id="galFile" class="vh" type="file" accept="image/*"></section>
-<section class="screen" id="account"><h2>Account</h2><div class="sgroup"><div class="mh first">Google Drive backup</div><p class="meta" id="gdNote"></p><div class="acts" id="gdActs"></div><p class="meta">Keep backing up from one device at a time. Home-screen apps on iPhone store their data separately from Safari, so connect Drive inside the app you actually use.</p></div></section>
+<section class="screen" id="account"><h2>Account</h2><div class="sgroup"><div class="mh first">Google Drive backup</div><p class="meta" id="gdNote"></p><div class="acts" id="gdActs"></div><p class="meta">Keep backing up from one device at a time. Home-screen apps on iPhone store their data separately from Safari, so connect Drive inside the app you actually use.</p></div><div class="sgroup"><div class="mh first">Dropbox backup</div><p class="meta" id="dbxNote"></p><div class="acts" id="dbxActs"></div></div></section>
 <section class="screen" id="settings"><h2>Settings</h2><div class="sgroup"><div class="mh first">Help</div><button type="button" id="helpItem"><span class="mi">?</span>How it works</button></div><div class="sgroup"><div class="mh first">Themes</div><div id="themeMenu" role="group"></div></div><div class="sgroup"><div class="mh first">Sorting</div><div class="srt"><label for="srt0">Scouting</label><select id="srt0"></select></div><div class="srt"><label for="srt1">Live</label><select id="srt1"></select></div><div class="srt"><label for="srt2">Vault</label><select id="srt2"></select></div></div><div class="sgroup"><div class="mh first">Sound</div><div class="mrow" role="switch" aria-checked="false" aria-disabled="true"><span>Music</span><span class="tgl"><i></i></span></div><div class="mrow np" aria-disabled="true"><span>Now playing…</span></div><div class="hint" style="padding:0 10px 8px">Coming soon.</div></div><div class="sgroup"><div class="mh first">What3words</div><div class="w3x"><p>what3words gives every 3 metre square on Earth its own three-word address, like <b>///filled.count.soap</b>. It&rsquo;s much easier to note down and share than coordinates, and it&rsquo;s free to use.</p><p>In this app, it&rsquo;s how you record exactly where a camera is hidden. Find your spot in the what3words app, copy its three words, and paste them into the <b>what3words address</b> field when you add or edit a camera. You can paste a what3words link too.</p><a class="w3a" href="https://what3words.com" target="_blank" rel="noopener">Open what3words.com</a></div></div><div class="sgroup"><div class="mh first">Storage</div><div style="padding:2px 10px 10px"><div class="stbar"><i id="stFill"></i></div><div id="stTxt" class="meta"></div></div></div><section class="tools"><h3>Backup</h3>
 <p class="meta" id="cloudNote">Saved on this device only. A backup copy is worth keeping in Notes.</p>
 <div class="acts"><button id="bk">Copy backup</button><button id="bkf">Save backup file</button></div>
@@ -1056,7 +1056,7 @@ function gdBackup(manual){
     }).catch(gdFail);
   });
 }
-function driveSoon(){if(!gd.on)return;clearTimeout(gd.timer);gd.timer=setTimeout(function(){gdBackup(false)},4000)}
+function driveSoon(){dbxSoon();if(!gd.on)return;clearTimeout(gd.timer);gd.timer=setTimeout(function(){gdBackup(false)},4000)}
 function gdConnect(){
   if(!GCID){toast("Google Drive isn’t set up yet.");return}
   gdToken(true,function(t){
@@ -1093,7 +1093,89 @@ function gdRender(){
   }
   var x;(x=$("gdOn"))&&x.addEventListener("click",gdConnect);(x=$("gdNow"))&&x.addEventListener("click",function(){gd.need=false;gdBackup(true)});(x=$("gdRes"))&&x.addEventListener("click",gdRestore);(x=$("gdOff"))&&x.addEventListener("click",gdOff);
 }
-gdRender();
+var DBXKEY="";
+var dbx={tok:null,exp:0,rt:"",busy:false,again:false,need:false,last:0,size:0,timer:null};
+try{dbx.rt=localStorage.getItem(KEY+"-dbx")||"";dbx.last=+localStorage.getItem(KEY+"-dbxlast")||0;dbx.size=+localStorage.getItem(KEY+"-dbxsize")||0}catch(e){}
+function dbxSave(){try{if(dbx.rt)localStorage.setItem(KEY+"-dbx",dbx.rt);else localStorage.removeItem(KEY+"-dbx");localStorage.setItem(KEY+"-dbxlast",String(dbx.last));localStorage.setItem(KEY+"-dbxsize",String(dbx.size))}catch(e){}}
+function dbxRedir(){return location.origin+location.pathname.replace(/index\.html$/,"")}
+function b64u(buf){var s="",a=new Uint8Array(buf);for(var k=0;k<a.length;k++)s+=String.fromCharCode(a[k]);return btoa(s).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"")}
+function dbxConnect(){
+  if(!DBXKEY){toast("Dropbox isn’t set up yet.");return}
+  var rnd=new Uint8Array(32);crypto.getRandomValues(rnd);var ver=b64u(rnd);
+  crypto.subtle.digest("SHA-256",new TextEncoder().encode(ver)).then(function(h){
+    try{localStorage.setItem(KEY+"-dbxver",ver)}catch(e){toast("Couldn’t start sign-in here.");return}
+    location.href="https://www.dropbox.com/oauth2/authorize?client_id="+encodeURIComponent(DBXKEY)+"&response_type=code&token_access_type=offline&code_challenge_method=S256&code_challenge="+b64u(h)+"&redirect_uri="+encodeURIComponent(dbxRedir())+"&state=dbx";
+  }).catch(function(){toast("Couldn’t start sign-in here.")});
+}
+function dbxTok(body){
+  return fetch("https://api.dropboxapi.com/oauth2/token",{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded"},body:body}).then(function(r){if(!r.ok)throw r.status;return r.json()});
+}
+function dbxToken(cb){
+  if(dbx.tok&&Date.now()<dbx.exp-60000)return cb(dbx.tok);
+  if(!dbx.rt)return cb(null);
+  dbxTok("grant_type=refresh_token&refresh_token="+encodeURIComponent(dbx.rt)+"&client_id="+encodeURIComponent(DBXKEY)).then(function(j){dbx.tok=j.access_token;dbx.exp=Date.now()+(+j.expires_in||14400)*1000;dbx.need=false;cb(dbx.tok)}).catch(function(e){if(e===400||e===401)dbx.need=true;cb(null)});
+}
+function dbxGet(t){
+  return fetch("https://content.dropboxapi.com/2/files/download",{method:"POST",headers:{Authorization:"Bearer "+t,"Dropbox-API-Arg":JSON.stringify({path:"/solargraph-backup.json"})}}).then(function(r){if(r.status===409)return null;if(!r.ok)throw r.status;return r.text()});
+}
+function dbxPut(t,text){
+  return fetch("https://content.dropboxapi.com/2/files/upload",{method:"POST",headers:{Authorization:"Bearer "+t,"Content-Type":"application/octet-stream","Dropbox-API-Arg":JSON.stringify({path:"/solargraph-backup.json",mode:"overwrite",mute:true})},body:text}).then(function(r){if(!r.ok)throw r.status;return r.json()});
+}
+function dbxFail(e){
+  dbx.busy=false;
+  if(e===401){dbx.tok=null;dbx.need=true}
+  else toast("Couldn’t back up to Dropbox. Will try again after your next change.");
+  dbxRender();
+}
+function dbxBackup(manual){
+  if(!dbx.rt)return;
+  if(dbx.busy){dbx.again=true;return}
+  dbx.busy=true;dbxRender();
+  dbxToken(function(t){
+    if(!t){dbx.busy=false;dbxRender();if(manual)toast("Couldn’t sign in to Dropbox.");return}
+    var text=backupData(true);
+    dbxPut(t,text).then(function(){
+      dbx.last=Date.now();dbx.size=text.length;dbx.busy=false;dbxSave();dbxRender();
+      if(manual)toast("Backed up to Dropbox ("+fmtB(text.length)+").");
+      if(dbx.again){dbx.again=false;dbxSoon()}
+    }).catch(dbxFail);
+  });
+}
+function dbxSoon(){if(!dbx.rt)return;clearTimeout(dbx.timer);dbx.timer=setTimeout(function(){dbxBackup(false)},4000)}
+function dbxRestore(){
+  dbxToken(function(t){
+    if(!t){toast("Couldn’t sign in to Dropbox.");return}
+    dbxGet(t).then(function(text){if(text==null){toast("No backup found in your Dropbox yet.");return}restore(text)}).catch(function(){toast("Couldn’t read your Dropbox backup.")});
+  });
+}
+function dbxOff(){dbx.tok=null;dbx.rt="";dbx.need=false;dbxSave();dbxRender();toast("Disconnected. Your backup stays in Dropbox.")}
+function dbxReturn(){
+  var q;try{q=new URLSearchParams(location.search)}catch(e){return}
+  if(q.get("state")!=="dbx"||(!q.get("code")&&!q.get("error")))return;
+  var code=q.get("code");try{history.replaceState(null,"",location.pathname)}catch(e){}
+  if(!code){toast("Dropbox sign-in was cancelled.");return}
+  var ver="";try{ver=localStorage.getItem(KEY+"-dbxver")||"";localStorage.removeItem(KEY+"-dbxver")}catch(e){}
+  if(!ver){toast("Dropbox sign-in didn’t finish. Please try again.");return}
+  dbxTok("grant_type=authorization_code&code="+encodeURIComponent(code)+"&client_id="+encodeURIComponent(DBXKEY)+"&code_verifier="+encodeURIComponent(ver)+"&redirect_uri="+encodeURIComponent(dbxRedir())).then(function(j){
+    dbx.tok=j.access_token;dbx.exp=Date.now()+(+j.expires_in||14400)*1000;dbx.rt=j.refresh_token||"";dbx.need=false;dbxSave();
+    if(window.setScreen)setScreen("account");
+    dbx.busy=true;dbxRender();
+    return dbxGet(dbx.tok).then(function(text){if(text!=null)restore(text,true)}).then(function(){dbx.busy=false;dbxBackup(true)});
+  }).catch(function(){toast("Couldn’t sign in to Dropbox.")});
+}
+function dbxRender(){
+  var n=$("dbxNote"),a=$("dbxActs");if(!n||!a)return;
+  var b=function(id,t,cls){return '<button type="button" id="'+id+'"'+(cls?' class="'+cls+'"':"")+'>'+t+'</button>'};
+  if(!DBXKEY){n.textContent="Dropbox backup isn’t set up yet.";a.innerHTML="";return}
+  if(!dbx.rt){n.textContent="Back up your cameras and photos to your own Dropbox, automatically after every change. The backup goes in an app folder (Apps > Solargraph tracker) that only this app writes to.";a.innerHTML=b("dbxOn","Connect Dropbox","primary")}
+  else{
+    var s=dbx.busy?"Backing up…":dbx.need?"Signed out. Tap Reconnect to continue backing up.":dbx.last?"Backed up "+new Date(dbx.last).toLocaleString([],{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"})+" ("+fmtB(dbx.size)+")":"Connected. Waiting for the first backup.";
+    n.textContent="Connected to Dropbox. "+s;
+    a.innerHTML=(dbx.need?b("dbxOn","Reconnect","primary"):b("dbxNow","Back up now"))+b("dbxRes","Restore from Dropbox")+b("dbxOff","Disconnect");
+  }
+  var x;(x=$("dbxOn"))&&x.addEventListener("click",dbxConnect);(x=$("dbxNow"))&&x.addEventListener("click",function(){dbxBackup(true)});(x=$("dbxRes"))&&x.addEventListener("click",dbxRestore);(x=$("dbxOff"))&&x.addEventListener("click",dbxOff);
+}
+gdRender();dbxRender();
 function loadForm(i,putUp){
   editId=i.id;photoData=null;orig={type:i.type,paper:i.paper};fillPicks();
   $("name").value=i.name;$("area").value=i.area||"";$("idea").checked=putUp?false:!i.start;
@@ -1441,6 +1523,7 @@ try{new MutationObserver(later).observe(B,{attributes:true,subtree:true,attribut
 later();
 })();
 try{if("serviceWorker" in navigator&&/github\.io$/.test(location.hostname))navigator.serviceWorker.register("sw.js")}catch(e){}
+dbxReturn();
 try{if(!localStorage.getItem(KEY+"-guide")&&!localStorage.getItem(KEY))setTimeout(function(){showGuide(0)},400)}catch(e){}
 
 function setHints(on,msg){document.body.classList.toggle("showhints",on);var b=$("formHelp");b.classList.toggle("on",on);b.setAttribute("aria-pressed",on?"true":"false");try{localStorage.setItem(KEY+"-hints",on?"1":"0")}catch(e){}if(msg)toast(on?"Descriptions shown.":"Descriptions hidden.")}
