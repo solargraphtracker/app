@@ -46,17 +46,17 @@ button.primary{background:var(--sun);border-color:var(--sun);color:#1a1205;font-
 #manual .mcols{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 #manual .mcol{display:flex;flex-direction:column;margin-bottom:0}
 #manual .mcol .mh{text-align:center}
-#manual .mcol button{width:100%;padding:13px 6px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--ink);font:600 .88rem system-ui,sans-serif;text-transform:none;letter-spacing:0;margin-top:10px}
+#manual .mcol button{width:100%;padding:11px 6px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--ink);font:600 .88rem system-ui,sans-serif;text-transform:none;letter-spacing:0;margin-top:10px}
 #manual .mcol .meta{margin:8px 2px 0;font-size:.78rem;text-align:center}
-#manual .mrest{margin-top:auto;padding-top:14px;border-top:1px solid var(--line);display:flex;flex-direction:column}
+#manual .mrest{margin-top:auto;padding-top:10px;border-top:1px solid var(--line);display:flex;flex-direction:column}
 #manual .mrest textarea{width:100%;margin:0;font-size:.8rem}
 #manual .mrest .mpick{margin:0 2px 0;flex:1;display:flex;align-items:center;justify-content:center;min-height:4.6em}
 .syundo{display:block;margin:12px auto 0;font-size:.8rem}
-#cbFoot{margin-top:16px;font-size:.78rem;opacity:.8}
+#cbFoot{margin:12px 0 4px;font-size:.74rem;opacity:.8}
 #cbActs .acts{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
 #cbActs .acts button{width:100%;padding:13px 8px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--ink);font:600 .9rem system-ui,sans-serif;text-transform:none;letter-spacing:0}
 #cbActs .acts button.primary{background:var(--sun);color:var(--onsun,#111);border-color:transparent}
-button.cbb{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;margin-top:10px;padding:13px 14px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--ink);font:600 .95rem system-ui,sans-serif;text-transform:none;letter-spacing:0}
+button.cbb{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;margin-top:8px;padding:11px 14px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--ink);font:600 .95rem system-ui,sans-serif;text-transform:none;letter-spacing:0}
 .acts button{padding:6px 10px;font-size:.85rem}
 input[type=range]{padding:0;border:0;background:none;accent-color:var(--sun)}
 .risk{display:flex;align-items:center;gap:8px;font-size:.88rem;color:var(--mute)}
@@ -342,6 +342,9 @@ body[data-screen=gallery] #list,body[data-screen=account] #list,body[data-screen
 #nav button#navScan.on{color:var(--ink)}
 .top .ttl{padding-right:0}
 #settings{text-align:left;padding:14px 0}
+#account{padding:14px 0 20px}
+#account .sgroup{margin-bottom:12px}
+#account .mh.first{padding-top:6px}
 #settings h2{margin:0 0 12px}
 .sgroup{background:var(--card);border:1px solid var(--line);border-radius:var(--r,10px);padding:6px;margin-bottom:14px}
 .sgroup .mh.first{border-top:0;margin-top:0}
@@ -555,9 +558,9 @@ html:root[data-skin=sunrise] #srchBtn.on{background:#ffe066;color:#1a1040;border
 
 <div id="list"><section class="pane" id="p0"></section><section class="pane" id="p1"></section><section class="pane" id="p2"></section></div>
 <section class="screen" id="gallery"><h2>Gallery</h2><div id="galList"></div><button type="button" id="gfab" aria-label="Add photos">+</button><input id="galFile" class="vh" type="file" accept="image/*"></section>
-<section class="screen" id="account"><h2>Backup</h2><div class="sgroup"><div class="mh first">Cloud sync</div><p class="meta" id="cbNote"></p><div id="cbActs"></div><p class="meta" id="cbFoot">Changes sync a few seconds after you make them, and whenever you open the app. On iPhone, sign in from the home-screen app you actually use, because it keeps its data separate from Safari.</p></div><div id="manual"><p class="meta" id="cloudNote" style="display:none"></p><p class="meta" id="bkNote" style="display:none"></p>
-<div class="mcols"><div class="sgroup mcol"><div class="mh first">Backup as text</div><button type="button" id="bk">Copy backup</button><p class="meta">Cameras only, no photos. Small enough to keep in Notes.</p><div class="mrest"><textarea id="paste" rows="4" placeholder="Paste backup text here"></textarea><button type="button" id="rp">Restore from text</button></div></div>
-<div class="sgroup mcol"><div class="mh first">Backup as file</div><button type="button" id="bkf">Save backup file</button><p class="meta">Includes your photos. Goes to your Files app.</p><div class="mrest"><p class="meta mpick">Choose a backup file from your phone or computer.</p><button type="button" id="rpf">Restore from file</button><input type="file" id="rpFile" accept=".json,application/json,text/plain" style="display:none"></div></div></div></div></section>
+<section class="screen" id="account"><h2>Backup</h2><div class="sgroup"><div class="mh first">Cloud sync</div><p class="meta" id="cbNote"></p><div id="cbActs"></div><p class="meta" id="cbFoot">Syncs automatically. On iPhone, sign in from the home-screen app, as it keeps its data separate from Safari.</p></div><div id="manual"><p class="meta" id="cloudNote" style="display:none"></p><p class="meta" id="bkNote" style="display:none"></p>
+<div class="mcols"><div class="sgroup mcol"><div class="mh first">Backup as text</div><button type="button" id="bk">Copy backup</button><p class="meta">Cameras only, no photos. Fits in Notes.</p><div class="mrest"><textarea id="paste" rows="3" placeholder="Paste backup text here"></textarea><button type="button" id="rp">Restore from text</button></div></div>
+<div class="sgroup mcol"><div class="mh first">Backup as file</div><button type="button" id="bkf">Save backup file</button><p class="meta">With photos. Saves to your Files app.</p><div class="mrest"><p class="meta mpick">Pick a saved backup file.</p><button type="button" id="rpf">Restore from file</button><input type="file" id="rpFile" accept=".json,application/json,text/plain" style="display:none"></div></div></div></div></section>
 <section class="screen" id="settings"><h2>Settings</h2><div class="sgroup"><div class="mh first">Help</div><button type="button" id="helpItem"><span class="mi">?</span>How it works</button></div><div class="sgroup"><div class="mh first">Themes</div><div id="themeMenu" role="group"></div></div><div class="sgroup"><div class="mh first">Sorting</div><div class="srt"><label for="srt0">Scouting</label><select id="srt0"></select></div><div class="srt"><label for="srt1">Live</label><select id="srt1"></select></div><div class="srt"><label for="srt2">Vault</label><select id="srt2"></select></div></div><div class="sgroup"><div class="mh first">Sound</div><div class="mrow" role="switch" aria-checked="false" aria-disabled="true"><span>Music</span><span class="tgl"><i></i></span></div><div class="mrow np" aria-disabled="true"><span>Now playing…</span></div><div class="hint" style="padding:0 10px 8px">Coming soon.</div></div><div class="sgroup"><div class="mh first">What3words</div><div class="w3x"><p>what3words gives every 3 metre square on Earth its own three-word address, like <b>///filled.count.soap</b>. It&rsquo;s much easier to note down and share than coordinates, and it&rsquo;s free to use.</p><p>In this app, it&rsquo;s how you record exactly where a camera is hidden. Find your spot in the what3words app, copy its three words, and paste them into the <b>what3words address</b> field when you add or edit a camera. You can paste a what3words link too.</p><a class="w3a" href="https://what3words.com" target="_blank" rel="noopener">Open what3words.com</a></div></div><div class="sgroup"><div class="mh first">Storage</div><div style="padding:2px 10px 10px"><div class="stbar"><i id="stFill"></i></div><div id="stTxt" class="meta"></div></div></div></section>
 
 <button id="fab" aria-label="Add solargraph">+</button>
@@ -1290,7 +1293,7 @@ function cbRender(){
   var b=function(id,t,cls,ic){return '<button type="button" id="'+id+'" class="'+(cls||"cbb")+'">'+(ic||"")+'<span>'+t+'</span></button>'};
   var P=prov();
   if(!P){
-    n.textContent="Sign in to keep your cameras and photos in step on all your devices, saved in your own cloud account.";
+    n.textContent="Sync your cameras and photos across your devices, saved in your own cloud account.";
     a.innerHTML=(GCID?b("gdOn","Continue with Google","cbb",G):"")+(DBXKEY?b("dbxOn","Continue with Dropbox","cbb",D):"");
   }else{
     var s=sy.busy?"Syncing…":sy.need?"Signed out. Tap Reconnect to keep syncing.":sy.err?"Couldn’t sync last time. It will try again.":sy.last?"Synced "+new Date(sy.last).toLocaleString([],{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"})+".":"Not synced yet.";
