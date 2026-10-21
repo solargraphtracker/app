@@ -49,8 +49,11 @@ button.primary{background:var(--sun);border-color:var(--sun);color:#1a1205;font-
 #manual .mrest{margin-top:auto;padding-top:14px;border-top:1px solid var(--line);display:flex;flex-direction:column}
 #manual .mrest textarea{width:100%;margin:0;font-size:.8rem}
 #manual .mrest .mpick{margin:0 2px 0;flex:1;display:flex;align-items:center;justify-content:center;min-height:4.6em}
+.syundo{display:block;margin:12px auto 0;font-size:.8rem}
 #cbFoot{margin-top:16px;font-size:.78rem;opacity:.8}
-#cbActs .acts{margin-top:12px}
+#cbActs .acts{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+#cbActs .acts button{width:100%;padding:13px 8px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--ink);font:600 .9rem system-ui,sans-serif;text-transform:none;letter-spacing:0}
+#cbActs .acts button.primary{background:var(--sun);color:var(--onsun,#111);border-color:transparent}
 button.cbb{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;margin-top:10px;padding:13px 14px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--ink);font:600 .95rem system-ui,sans-serif;text-transform:none;letter-spacing:0}
 .acts button{padding:6px 10px;font-size:.85rem}
 input[type=range]{padding:0;border:0;background:none;accent-color:var(--sun)}
@@ -550,7 +553,7 @@ html:root[data-skin=sunrise] #srchBtn.on{background:#ffe066;color:#1a1040;border
 
 <div id="list"><section class="pane" id="p0"></section><section class="pane" id="p1"></section><section class="pane" id="p2"></section></div>
 <section class="screen" id="gallery"><h2>Gallery</h2><div id="galList"></div><button type="button" id="gfab" aria-label="Add photos">+</button><input id="galFile" class="vh" type="file" accept="image/*"></section>
-<section class="screen" id="account"><h2>Backup</h2><div class="sgroup"><div class="mh first">Cloud backup</div><p class="meta" id="cbNote"></p><div id="cbActs"></div><p class="meta" id="cbFoot">This is a backup, not live sync. It lets you get your cameras back on a new phone: sign in there with the same account and tap Restore. On iPhone, sign in from the home-screen app you actually use, because it keeps its data separate from Safari.</p></div><div id="manual"><p class="meta" id="cloudNote" style="display:none"></p><p class="meta" id="bkNote" style="display:none"></p>
+<section class="screen" id="account"><h2>Backup</h2><div class="sgroup"><div class="mh first">Cloud sync</div><p class="meta" id="cbNote"></p><div id="cbActs"></div><p class="meta" id="cbFoot">Changes sync a few seconds after you make them, and whenever you open the app. On iPhone, sign in from the home-screen app you actually use, because it keeps its data separate from Safari.</p></div><div id="manual"><p class="meta" id="cloudNote" style="display:none"></p><p class="meta" id="bkNote" style="display:none"></p>
 <div class="mcols"><div class="sgroup mcol"><div class="mh first">Backup as text</div><button type="button" id="bk">Copy backup</button><p class="meta">Cameras only, no photos. Small enough to keep in Notes.</p><div class="mrest"><textarea id="paste" rows="4" placeholder="Paste backup text here"></textarea><button type="button" id="rp">Restore from text</button></div></div>
 <div class="sgroup mcol"><div class="mh first">Backup as file</div><button type="button" id="bkf">Save backup file</button><p class="meta">Includes your photos. Goes to your Files app.</p><div class="mrest"><p class="meta mpick">Choose a backup file from your phone or computer.</p><button type="button" id="rpf">Restore from file</button><input type="file" id="rpFile" accept=".json,application/json,text/plain" style="display:none"></div></div></div></div></section>
 <section class="screen" id="settings"><h2>Settings</h2><div class="sgroup"><div class="mh first">Help</div><button type="button" id="helpItem"><span class="mi">?</span>How it works</button></div><div class="sgroup"><div class="mh first">Themes</div><div id="themeMenu" role="group"></div></div><div class="sgroup"><div class="mh first">Sorting</div><div class="srt"><label for="srt0">Scouting</label><select id="srt0"></select></div><div class="srt"><label for="srt1">Live</label><select id="srt1"></select></div><div class="srt"><label for="srt2">Vault</label><select id="srt2"></select></div></div><div class="sgroup"><div class="mh first">Sound</div><div class="mrow" role="switch" aria-checked="false" aria-disabled="true"><span>Music</span><span class="tgl"><i></i></span></div><div class="mrow np" aria-disabled="true"><span>Now playing…</span></div><div class="hint" style="padding:0 10px 8px">Coming soon.</div></div><div class="sgroup"><div class="mh first">What3words</div><div class="w3x"><p>what3words gives every 3 metre square on Earth its own three-word address, like <b>///filled.count.soap</b>. It&rsquo;s much easier to note down and share than coordinates, and it&rsquo;s free to use.</p><p>In this app, it&rsquo;s how you record exactly where a camera is hidden. Find your spot in the what3words app, copy its three words, and paste them into the <b>what3words address</b> field when you add or edit a camera. You can paste a what3words link too.</p><a class="w3a" href="https://what3words.com" target="_blank" rel="noopener">Open what3words.com</a></div></div><div class="sgroup"><div class="mh first">Storage</div><div style="padding:2px 10px 10px"><div class="stbar"><i id="stFill"></i></div><div id="stTxt" class="meta"></div></div></div></section>
@@ -623,7 +626,7 @@ function split(){
 function lsChars(){var n=0;try{for(var k in localStorage){if(Object.prototype.hasOwnProperty.call(localStorage,k))n+=k.length+(localStorage.getItem(k)||"").length}}catch(e){}return n}
 var LSMAX=5000000;
 function roomFor(chars){return !!assets||lsChars()+chars<LSMAX*0.95}
-function persist(){split();markPend();cloudSync();driveSoon();
+function persist(){split();stamp();markPend();cloudSync();syncSoon();
   try{localStorage.setItem(KEY,JSON.stringify(items));return true}
   catch(e){if(col){toast("This phone’s storage is full, so this change is only saved to your account. See Settings > Storage.");return true}toast("Couldn’t save. Browser storage may be full or blocked. Try a smaller photo.");return false}
 }
@@ -746,7 +749,7 @@ function sorter(mode){
   };
   return f[mode]||f["new"];
 }
-function saveSort(){try{localStorage.setItem(KEY+"-sort",JSON.stringify(sortSel))}catch(e){}try{if(sortRef)sortRef.set({sel:sortSel.slice()}).catch(function(){})}catch(e){}}
+function saveSort(){prefStamp("sort");try{localStorage.setItem(KEY+"-sort",JSON.stringify(sortSel))}catch(e){}try{if(sortRef)sortRef.set({sel:sortSel.slice()}).catch(function(){})}catch(e){}}
 function fillSort(){[0,1,2].forEach(function(n){var el=$("srt"+n);if(!el)return;el.innerHTML=SORTOPTS[n].map(function(o){return '<option value="'+o[0]+'">'+o[1]+'</option>'}).join("");el.value=sortSel[n]})}
 var sq="",TABN=["Scouting","Live","Vault"];
 function nomatch(n,groups){var o=[0,1,2].filter(function(k){return k!==n&&groups[k].length});var h='<div class="empty nomatch">No matches here.'+(o.length?' ':'');o.forEach(function(k){h+='<button type="button" class="lnk" data-go="'+k+'">'+groups[k].length+' in '+TABN[k]+'</button>'});return h+'</div>'}
@@ -813,10 +816,10 @@ document.querySelectorAll(".wheelWrap").forEach(function(wr){wr.addEventListener
 function ymd(){var n=new Date();return n.getFullYear()+"-"+String(n.getMonth()+1).padStart(2,"0")+"-"+String(n.getDate()).padStart(2,"0")}
 var TYPES=["Beer can","Puck","Film Canister"],BASE={type:TYPES,paper:[]},opts={type:[],paper:[]},optsRef=null,needSeed=true,orig={};
 try{var oo=JSON.parse(localStorage.getItem(KEY+"-opts")||"null");if(oo&&oo.type&&oo.paper){opts={type:oo.type,paper:oo.paper};needSeed=false}}catch(e){}
-function saveOpts(){try{localStorage.setItem(KEY+"-opts",JSON.stringify(opts))}catch(e){}try{if(optsRef)optsRef.set({type:opts.type.slice(),paper:opts.paper.slice()}).catch(function(){toast("Couldn’t save the list to your account. It’s still saved on this device.")})}catch(e){}}
+function saveOpts(){prefStamp("opts");try{localStorage.setItem(KEY+"-opts",JSON.stringify(opts))}catch(e){}try{if(optsRef)optsRef.set({type:opts.type.slice(),paper:opts.paper.slice()}).catch(function(){toast("Couldn’t save the list to your account. It’s still saved on this device.")})}catch(e){}}
 function hasOpt(k,v){var l=String(v).toLowerCase();return BASE[k].concat(opts[k]).some(function(x){return x.toLowerCase()===l})}
 function addOpt(k,v){v=String(v||"").trim();if(!v||hasOpt(k,v))return false;opts[k]=opts[k].concat([v]);return true}
-function seedOpts(){["type","paper"].forEach(function(k){items.forEach(function(i){addOpt(k,i[k])})});needSeed=false;saveOpts()}
+function seedOpts(){["type","paper"].forEach(function(k){items.forEach(function(i){addOpt(k,i[k])})});needSeed=false;seeding=true;saveOpts();seeding=false}
 function showAdd(k,on){$(k+"Add").style.display=on?"":"none";if(!on)$(k+"New").value=""}
 function refill(k){var extra=opts[k].slice().sort(function(a,b){return a.localeCompare(b)});
   $(k).innerHTML='<option value="">Choose…</option>'+BASE[k].concat(extra).map(function(v){return '<option>'+esc(v)+'</option>'}).join("")+'<option value="__new">Add new…</option>';showAdd(k,false)}
@@ -1013,10 +1016,114 @@ function initCloud(){
     });
   }).catch(function(){});
 }
+/* ===== Cloud sync (Google Drive or Dropbox) ===== */
 var GCID="393643903194-6io671jsa5061jpc4iq6mqq44ru1plf6.apps.googleusercontent.com";
-var gd={tok:null,exp:0,timer:null,busy:false,again:false,need:false,on:false,last:0,size:0};
-try{gd.on=localStorage.getItem(KEY+"-drive")==="1";gd.last=+localStorage.getItem(KEY+"-drivelast")||0;gd.size=+localStorage.getItem(KEY+"-drivesize")||0}catch(e){}
-function gdSave(){try{localStorage.setItem(KEY+"-drive",gd.on?"1":"0");localStorage.setItem(KEY+"-drivelast",String(gd.last));localStorage.setItem(KEY+"-drivesize",String(gd.size))}catch(e){}}
+var DBXKEY="5ne5sn335j2l3eg";
+var gd={tok:null,exp:0,on:false},dbx={tok:null,exp:0,rt:"",retry:0};
+try{gd.on=localStorage.getItem(KEY+"-drive")==="1";dbx.rt=localStorage.getItem(KEY+"-dbx")||"";var gt=JSON.parse(localStorage.getItem(KEY+"-gtok")||"null");if(gt&&gt.e>Date.now()+60000){gd.tok=gt.t;gd.exp=gt.e}}catch(e){}
+function gdSave(){try{localStorage.setItem(KEY+"-drive",gd.on?"1":"0")}catch(e){}}
+function dbxSave(){try{if(dbx.rt)localStorage.setItem(KEY+"-dbx",dbx.rt);else localStorage.removeItem(KEY+"-dbx")}catch(e){}}
+var sy={busy:false,again:false,need:false,err:false,last:0,seen:{},legacy:false,dirty:true,n:0,timer:null,warned:false};
+try{var so=JSON.parse(localStorage.getItem(KEY+"-sync")||"null");if(so){sy.last=+so.last||0;sy.seen=so.seen||{};sy.legacy=!!so.legacy;sy.dirty=so.dirty!==false;sy.need=!!so.need}}catch(e){}
+function sySave(){try{localStorage.setItem(KEY+"-sync",JSON.stringify({last:sy.last,seen:sy.seen,legacy:sy.legacy,dirty:sy.dirty,need:sy.need}))}catch(e){}}
+var DEV="";try{DEV=localStorage.getItem(KEY+"-dev")||"";if(!DEV){DEV=Date.now().toString(36)+Math.random().toString(36).slice(2,8);localStorage.setItem(KEY+"-dev",DEV)}}catch(e){DEV="t"+Math.random().toString(36).slice(2,10)}
+var MYFILE="sg-dev-"+DEV+".json";
+
+/* change tracking: every camera and gallery photo carries u (last changed), deletions leave a dated tombstone */
+var dead={},gdead={},optsU=0,sortU=0,known=null,gknown=null,seeding=false;
+try{dead=JSON.parse(localStorage.getItem(KEY+"-dead")||"{}")||{};gdead=JSON.parse(localStorage.getItem(KEY+"-gdead")||"{}")||{};optsU=+localStorage.getItem(KEY+"-optsu")||0;sortU=+localStorage.getItem(KEY+"-sortu")||0}catch(e){}
+function deadSave(){try{localStorage.setItem(KEY+"-dead",JSON.stringify(dead));localStorage.setItem(KEY+"-gdead",JSON.stringify(gdead));localStorage.setItem(KEY+"-optsu",String(optsU));localStorage.setItem(KEY+"-sortu",String(sortU))}catch(e){}}
+function hsh(s){var h=2166136261;for(var k=0;k<s.length;k++){h^=s.charCodeAt(k);h=Math.imul(h,16777619)}return (h>>>0).toString(36)+s.length.toString(36)}
+var hcache={};
+function dkey(d){if(!d||String(d).indexOf("data:")!==0)return "";var x=d.indexOf(","),c=(d.length-x)+":"+d.slice(x+1,x+65)+d.slice(-64);return hcache[c]||(hcache[c]=hsh(d.slice(x+1)))}
+function fsig(o,skip){var r={};Object.keys(o).sort().forEach(function(x){if(!skip[x])r[x]=o[x]});return JSON.stringify(r)}
+var ISKIP={u:1,ph:1,photo:1},GSKIP={u:1,th:1,fu:1,thumb:1,full:1};
+function iSig(i){return {f:fsig(i,ISKIP),p:dkey(pstore[i.id]||i.photo)}}
+function gSig(g){return {f:fsig(g,GSKIP),t:dkey(g.thumb),b:dkey(g.full)}}
+function syncInit(){
+  known={};gknown={};
+  items.forEach(function(i){if(!i.u)i.u=+i.edited||1;var s=iSig(i);if(i.ph===undefined)i.ph=s.p;known[i.id]=s});
+  gal.forEach(function(g){if(!g.u)g.u=+g.ts||1;var s=gSig(g);if(g.th===undefined)g.th=s.t;if(g.fu===undefined)g.fu=s.b;gknown[g.id]=s});
+  if(prov())syncSoon(1200);
+}
+function stamp(){
+  if(!known)return;var now=Date.now(),ch=false,ids={};
+  items.forEach(function(i){ids[i.id]=1;var s=iSig(i),k=known[i.id];
+    if(!k){i.u=now;i.ph=s.p;delete dead[i.id];ch=true}
+    else if(k.f!==s.f||k.p!==s.p){i.u=now;if(k.p!==s.p)i.ph=s.p;ch=true}
+    known[i.id]=s});
+  Object.keys(known).forEach(function(id){if(!ids[id]){dead[id]=now;delete known[id];ch=true}});
+  if(ch){sy.dirty=true;sy.n++;deadSave();sySave()}
+}
+function gstamp(){
+  if(!gknown)return;var now=Date.now(),ch=false,ids={};
+  gal.forEach(function(g){ids[g.id]=1;var s=gSig(g),k=gknown[g.id];
+    if(!k){g.u=now;g.th=s.t;g.fu=s.b;delete gdead[g.id];ch=true}
+    else if(k.f!==s.f||k.t!==s.t||k.b!==s.b){g.u=now;if(k.t!==s.t)g.th=s.t;if(k.b!==s.b)g.fu=s.b;ch=true}
+    gknown[g.id]=s});
+  Object.keys(gknown).forEach(function(id){if(!ids[id]){gdead[id]=now;delete gknown[id];ch=true}});
+  if(ch){sy.dirty=true;sy.n++;deadSave();sySave()}
+}
+function prefStamp(which){if(seeding)return;if(which==="opts")optsU=Date.now();else sortU=Date.now();sy.dirty=true;sy.n++;deadSave();sySave();syncSoon()}
+function iRec(i){var o={};Object.keys(i).forEach(function(k){if(k!=="photo")o[k]=i[k]});return o}
+function gRec(g){var o={};Object.keys(g).forEach(function(k){if(k!=="thumb"&&k!=="full")o[k]=g[k]});return o}
+function myState(){return {app:"solargraphs-sync",v:1,dev:DEV,at:Date.now(),items:items.map(iRec),dead:dead,gal:gal.map(gRec),gdead:gdead,opts:{v:opts,u:optsU},sort:{v:sortSel,u:sortU}}}
+
+/* merge another device's state into ours: newest change wins per camera/photo, deletions win over older edits */
+function mergeIn(r){
+  var ch=false,idx={},gidx={};
+  Object.keys(r.dead||{}).forEach(function(id){var t=+r.dead[id]||0;if(t>(dead[id]||0)){dead[id]=t;ch=true}});
+  Object.keys(r.gdead||{}).forEach(function(id){var t=+r.gdead[id]||0;if(t>(gdead[id]||0)){gdead[id]=t;ch=true}});
+  items.forEach(function(i,n){idx[i.id]=n});
+  (Array.isArray(r.items)?r.items:[]).forEach(function(x){
+    if(!x||!x.id||!x.name)return;var u=+x.u||0;if((dead[x.id]||0)>=u)return;
+    var n=idx[x.id],it=Object.assign({},x);
+    if(n===undefined){it.photo=null;items.push(it);idx[x.id]=items.length-1;ch=true}
+    else if(u>(+items[n].u||0)||(u===(+items[n].u||0)&&fsig(x,ISKIP)+(x.ph||"")>fsig(items[n],ISKIP)+(items[n].ph||""))){it.photo=items[n].photo||null;if(!x.ph)delete pstore[x.id];items[n]=it;ch=true}
+  });
+  var b=items.length;items=items.filter(function(i){return (dead[i.id]||0)<(+i.u||0)});if(items.length!==b)ch=true;
+  gal.forEach(function(g,n){gidx[g.id]=n});
+  (Array.isArray(r.gal)?r.gal:[]).forEach(function(x){
+    if(!x||!x.id)return;var u=+x.u||0;if((gdead[x.id]||0)>=u)return;
+    var n=gidx[x.id],g=Object.assign({},x);
+    if(n===undefined){g.thumb="";gal.push(g);gidx[x.id]=gal.length-1;ch=true}
+    else if(u>(+gal[n].u||0)||(u===(+gal[n].u||0)&&fsig(x,GSKIP)+(x.th||"")+(x.fu||"")>fsig(gal[n],GSKIP)+(gal[n].th||"")+(gal[n].fu||""))){g.thumb=gal[n].thumb||"";if(gal[n].full)g.full=gal[n].full;if(!x.fu)delete g.full;gal[n]=g;ch=true}
+  });
+  b=gal.length;gal=gal.filter(function(g){return (gdead[g.id]||0)<(+g.u||0)});if(gal.length!==b)ch=true;
+  if(r.opts&&r.opts.v&&+r.opts.u>optsU&&Array.isArray(r.opts.v.type)&&Array.isArray(r.opts.v.paper)){opts={type:r.opts.v.type.map(String),paper:r.opts.v.paper.map(String)};optsU=+r.opts.u;needSeed=false;ch=true}
+  if(r.sort&&Array.isArray(r.sort.v)&&r.sort.v.length===3&&+r.sort.u>sortU){sortSel=r.sort.v.map(function(v,n){return SORTOPTS[n].some(function(o){return o[0]===v})?v:SORTDEF[n]});sortU=+r.sort.u;ch=true}
+  return ch;
+}
+function syncApply(){
+  split();
+  var ids={};items.forEach(function(i){ids[i.id]=1;known[i.id]=iSig(i)});Object.keys(known).forEach(function(id){if(!ids[id])delete known[id]});
+  var gids={};gal.forEach(function(g){gids[g.id]=1;gknown[g.id]=gSig(g)});Object.keys(gknown).forEach(function(id){if(!gids[id])delete gknown[id]});
+  try{localStorage.setItem(KEY,JSON.stringify(items))}catch(e){}
+  try{localStorage.setItem(GKEY,JSON.stringify(gal))}catch(e){}
+  try{localStorage.setItem(KEY+"-opts",JSON.stringify(opts));localStorage.setItem(KEY+"-sort",JSON.stringify(sortSel))}catch(e){}
+  deadSave();try{snapSigs();gSnap()}catch(e){}
+  try{fillPicks();fillSort()}catch(e){}
+  render();renderGallery();
+}
+
+/* safety copies: what this device looked like before a sync changed it (last 3) */
+function snapList(){try{var s=JSON.parse(localStorage.getItem(KEY+"-snaps")||"[]");return Array.isArray(s)?s:[]}catch(e){return []}}
+function snapTake(){return {at:Date.now(),items:items.map(iRec),gal:gal.map(gRec),dead:Object.assign({},dead),gdead:Object.assign({},gdead)}}
+function snapKeep(s){var L=snapList();L.push(s);while(L.length>3)L.shift();for(var k=0;k<4;k++){try{localStorage.setItem(KEY+"-snaps",JSON.stringify(L));return}catch(e){L.shift();if(!L.length)return}}}
+function undoSync(){
+  var L=snapList(),s=L.pop();if(!s){toast("Nothing to undo.");return}
+  var now=Date.now(),idx={},gidx={};
+  items.forEach(function(i,n){idx[i.id]=n});
+  var nch=0;s.items.forEach(function(x){var n=idx[x.id];if(n!==undefined&&fsig(x,ISKIP)===fsig(items[n],ISKIP)&&(x.ph||"")===(items[n].ph||""))return;x=Object.assign({},x);x.u=now;delete dead[x.id];nch++;if(n===undefined){x.photo=null;items.push(x)}else{x.photo=items[n].photo||null;items[n]=x}});
+  gal.forEach(function(g,n){gidx[g.id]=n});
+  s.gal.forEach(function(x){var n=gidx[x.id];if(n!==undefined&&fsig(x,GSKIP)===fsig(gal[n],GSKIP)&&(x.th||"")===(gal[n].th||"")&&(x.fu||"")===(gal[n].fu||""))return;x=Object.assign({},x);x.u=now;delete gdead[x.id];nch++;if(n===undefined){x.thumb="";gal.push(x)}else{x.thumb=gal[n].thumb||"";if(gal[n].full)x.full=gal[n].full;gal[n]=x}});
+  try{localStorage.setItem(KEY+"-snaps",JSON.stringify(L))}catch(e){}
+  sy.dirty=true;sy.n++;syncApply();sySave();cbRender();
+  toast("Put back how this device looked before that sync.");
+  syncSoon(300);
+}
+
+/* providers */
 function gdLib(cb){if(window.google&&google.accounts&&google.accounts.oauth2)return cb(true);var s=document.createElement("script");s.src="https://accounts.google.com/gsi/client";s.onload=function(){cb(true)};s.onerror=function(){cb(false)};document.head.appendChild(s)}
 function gdToken(interactive,cb){
   if(gd.tok&&Date.now()<gd.exp-60000)return cb(gd.tok);
@@ -1026,79 +1133,131 @@ function gdToken(interactive,cb){
     var done=false,fin=function(t){if(done)return;done=true;cb(t)};
     try{
       var tc=google.accounts.oauth2.initTokenClient({client_id:GCID,scope:"https://www.googleapis.com/auth/drive.appdata",
-        callback:function(r){if(r&&r.access_token){gd.tok=r.access_token;gd.exp=Date.now()+(+r.expires_in||3600)*1000;gd.need=false;fin(gd.tok)}else fin(null)},
+        callback:function(r){if(r&&r.access_token){gd.tok=r.access_token;gd.exp=Date.now()+(+r.expires_in||3600)*1000;try{localStorage.setItem(KEY+"-gtok",JSON.stringify({t:gd.tok,e:gd.exp}))}catch(e){}fin(gd.tok)}else fin(null)},
         error_callback:function(){fin(null)}});
       tc.requestAccessToken({prompt:interactive?"":"none"});
+      if(!interactive)setTimeout(function(){fin(null)},20000);
     }catch(e){fin(null)}
   });
 }
-function gdH(t){return {Authorization:"Bearer "+t}}
-function gdFind(t){return fetch("https://www.googleapis.com/drive/v3/files?spaces=appDataFolder&q="+encodeURIComponent("name='solargraph-backup.json'")+"&fields=files(id,modifiedTime,size)",{headers:gdH(t)}).then(function(r){if(!r.ok)throw r.status;return r.json()}).then(function(j){return j.files&&j.files[0]||null})}
-function gdGet(t,id){return fetch("https://www.googleapis.com/drive/v3/files/"+id+"?alt=media",{headers:gdH(t)}).then(function(r){if(!r.ok)throw r.status;return r.text()})}
-function gdPut(t,id,text){
-  var meta=id?{}:{name:"solargraph-backup.json",parents:["appDataFolder"]};
-  var url="https://www.googleapis.com/upload/drive/v3/files"+(id?"/"+id:"")+"?uploadType=resumable";
-  return fetch(url,{method:id?"PATCH":"POST",headers:{Authorization:"Bearer "+t,"Content-Type":"application/json; charset=UTF-8"},body:JSON.stringify(meta)})
-    .then(function(r){if(!r.ok)throw r.status;var loc=r.headers.get("Location");if(!loc)throw 0;return fetch(loc,{method:"PUT",headers:{"Content-Type":"application/json"},body:text})})
-    .then(function(r){if(!r.ok)throw r.status;return r.json()});
+function hok(r){if(!r.ok)throw r.status;return r}
+var GDP={name:"Google",
+  tok:function(inter){return new Promise(function(res){gdToken(inter,res)})},
+  list:function(t){var out=[],q=encodeURIComponent("name contains 'sg-' or name = 'solargraph-backup.json'");
+    var page=function(pt){return fetch("https://www.googleapis.com/drive/v3/files?spaces=appDataFolder&pageSize=1000&fields=nextPageToken,files(id,name,modifiedTime)&q="+q+(pt?"&pageToken="+encodeURIComponent(pt):""),{headers:{Authorization:"Bearer "+t}}).then(hok).then(function(r){return r.json()}).then(function(j){(j.files||[]).forEach(function(f){out.push({name:f.name,id:f.id,mod:f.modifiedTime})});return j.nextPageToken?page(j.nextPageToken):out})};
+    return page("")},
+  get:function(t,f,blob){return fetch("https://www.googleapis.com/drive/v3/files/"+f.id+"?alt=media",{headers:{Authorization:"Bearer "+t}}).then(hok).then(function(r){return blob?r.blob():r.text()})},
+  put:function(t,name,body,type,f){
+    var meta=f?{}:{name:name,parents:["appDataFolder"]};
+    return fetch("https://www.googleapis.com/upload/drive/v3/files"+(f?"/"+f.id:"")+"?uploadType=resumable",{method:f?"PATCH":"POST",headers:{Authorization:"Bearer "+t,"Content-Type":"application/json; charset=UTF-8"},body:JSON.stringify(meta)})
+      .then(hok).then(function(r){var loc=r.headers.get("Location");if(!loc)throw 0;return fetch(loc,{method:"PUT",headers:{"Content-Type":type},body:body})}).then(hok)}
+};
+function dbxRedir(){return location.origin+location.pathname.replace(/index\.html$/,"")}
+function b64u(buf){var s="",a=new Uint8Array(buf);for(var k=0;k<a.length;k++)s+=String.fromCharCode(a[k]);return btoa(s).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"")}
+function dbxTok(body){return fetch("https://api.dropboxapi.com/oauth2/token",{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded"},body:body}).then(hok).then(function(r){return r.json()})}
+function dbxToken(cb){
+  if(dbx.tok&&Date.now()<dbx.exp-60000)return cb(dbx.tok);
+  if(!dbx.rt)return cb(null);
+  dbxTok("grant_type=refresh_token&refresh_token="+encodeURIComponent(dbx.rt)+"&client_id="+encodeURIComponent(DBXKEY)).then(function(j){dbx.tok=j.access_token;dbx.exp=Date.now()+(+j.expires_in||14400)*1000;cb(dbx.tok)}).catch(function(){cb(null)});
 }
-function gdFail(e){
-  gd.busy=false;
-  if(e===401){gd.tok=null;gd.need=true;gdRender();return}
-  if(e===403){toast("Google Drive said no. Check that the Drive API is switched on for this app.")}
-  else toast("Couldn’t back up to Google Drive. Will try again after your next change.");
-  gdRender();
+var DBXP={name:"Dropbox",
+  tok:function(){return new Promise(function(res){dbxToken(res)})},
+  list:function(t){var out=[];
+    var take=function(j){(j.entries||[]).forEach(function(e){if(e[".tag"]==="file")out.push({name:e.name,id:e.path_lower,mod:e.rev})});return j.has_more?call("list_folder/continue",{cursor:j.cursor}):out};
+    var call=function(p,b){return fetch("https://api.dropboxapi.com/2/files/"+p,{method:"POST",headers:{Authorization:"Bearer "+t,"Content-Type":"application/json"},body:JSON.stringify(b)}).then(hok).then(function(r){return r.json()}).then(take)};
+    return call("list_folder",{path:"",limit:2000})},
+  get:function(t,f,blob){return fetch("https://content.dropboxapi.com/2/files/download",{method:"POST",headers:{Authorization:"Bearer "+t,"Dropbox-API-Arg":JSON.stringify({path:f.id})}}).then(hok).then(function(r){return blob?r.blob():r.text()})},
+  put:function(t,name,body,type){return fetch("https://content.dropboxapi.com/2/files/upload",{method:"POST",headers:{Authorization:"Bearer "+t,"Content-Type":"application/octet-stream","Dropbox-API-Arg":JSON.stringify({path:"/"+name,mode:"overwrite",mute:true})},body:body}).then(hok)}
+};
+function prov(){return gd.on&&GCID?GDP:dbx.rt&&DBXKEY?DBXP:null}
+
+/* photos travel as separate files named by their content, so unchanged photos never re-upload */
+function blobUrl(b){return b.slice(0,12).arrayBuffer().then(function(h){var a=new Uint8Array(h),t=a[0]===0x89&&a[1]===0x50?"image/png":a[0]===0x52&&a[8]===0x57?"image/webp":"image/jpeg";return new Promise(function(res,rej){var fr=new FileReader();fr.onload=function(){res(fr.result)};fr.onerror=rej;fr.readAsDataURL(new Blob([b],{type:t}))})})}
+function phName(k){return "sg-ph-"+k+".jpg"}
+function blobsDown(P,t,byName){
+  var jobs=[];
+  items.forEach(function(i){if(i.ph&&dkey(pstore[i.id])!==i.ph&&byName[phName(i.ph)])jobs.push(["i",i.id,i.ph])});
+  gal.forEach(function(g){if(g.th&&dkey(g.thumb)!==g.th&&byName[phName(g.th)])jobs.push(["t",g.id,g.th]);if(g.fu&&dkey(g.full)!==g.fu&&byName[phName(g.fu)])jobs.push(["f",g.id,g.fu])});
+  if(!jobs.length)return Promise.resolve();
+  var chain=Promise.resolve(),full=false,got=0;
+  jobs.forEach(function(j){chain=chain.then(function(){
+    if(full)return;
+    return P.get(t,byName[phName(j[2])],true).then(blobUrl).then(function(d){
+      if(j[0]==="i"){var it=items.find(function(x){return x.id===j[1]});if(!it||it.ph!==j[2])return;var old=pstore[it.id];pstore[it.id]=d;if(!psave()){if(old)pstore[it.id]=old;else delete pstore[it.id];full=true;return}known[it.id]=iSig(it);got++}
+      else{var g=gal.find(function(x){return x.id===j[1]});if(!g)return;var k=j[0]==="t"?"thumb":"full";if((k==="thumb"?g.th:g.fu)!==j[2])return;var o=g[k];g[k]=d;try{localStorage.setItem(GKEY,JSON.stringify(gal))}catch(e){g[k]=o;full=true;return}gknown[g.id]=gSig(g);got++}
+    }).catch(function(e){if(e===401)throw e});
+  })});
+  return chain.then(function(){if(got){render();renderGallery()}if(full&&!sy.warned){sy.warned=true;toast("This device is out of storage, so some photos stayed in the cloud.")}});
 }
-function gdBackup(manual){
-  if(!gd.on)return;
-  if(gd.busy){gd.again=true;return}
-  if(gd.need&&!manual){gdRender();return}
-  gd.busy=true;gdRender();
-  gdToken(!!manual,function(t){
-    if(!t){gd.busy=false;gd.need=true;gdRender();if(manual)toast("Couldn’t sign in to Google.");return}
-    var text=backupData(true);
-    gdFind(t).then(function(f){return gdPut(t,f&&f.id,text)}).then(function(){
-      gd.last=Date.now();gd.size=text.length;gd.busy=false;gdSave();gdRender();
-      if(manual)toast("Backed up to Google Drive ("+fmtB(text.length)+").");
-      if(gd.again){gd.again=false;driveSoon()}
-    }).catch(gdFail);
+function blobsUp(P,t,byName){
+  var jobs=[];
+  items.forEach(function(i){var d=pstore[i.id];if(i.ph&&d&&dkey(d)===i.ph&&!byName[phName(i.ph)])jobs.push([i.ph,d])});
+  gal.forEach(function(g){if(g.th&&dkey(g.thumb)===g.th&&!byName[phName(g.th)])jobs.push([g.th,g.thumb]);if(g.fu&&dkey(g.full)===g.fu&&!byName[phName(g.fu)])jobs.push([g.fu,g.full])});
+  var chain=Promise.resolve(),seen={};
+  jobs.forEach(function(j){if(seen[j[0]])return;seen[j[0]]=1;chain=chain.then(function(){return P.put(t,phName(j[0]),dataToBlob(j[1]),"image/jpeg",null).then(function(){byName[phName(j[0])]={name:phName(j[0])}})})});
+  return chain;
+}
+
+/* one sync round: read other devices, merge, fetch/upload photos, write our own file */
+function syncNow(manual){
+  var P=prov();if(!P)return;
+  if(sy.busy){sy.again=true;return}
+  if(sy.need&&!manual){cbRender();return}
+  sy.busy=true;cbRender();
+  var t;
+  P.tok(!!manual).then(function(tk){
+    if(!tk){throw "auth"}t=tk;sy.need=false;
+    return P.list(t);
+  }).then(function(files){
+    var byName={};files.forEach(function(f){byName[f.name]=f});
+    var pre=snapTake(),ch=false,chain=Promise.resolve();
+    var leg=byName["solargraph-backup.json"];
+    if(!sy.legacy&&leg)chain=chain.then(function(){return P.get(t,leg,false).then(function(txt){restore(txt,true)})});
+    chain=chain.then(function(){sy.legacy=true});
+    files.forEach(function(f){
+      if(!/^sg-dev-.+\.json$/.test(f.name)||f.name===MYFILE||sy.seen[f.name]===f.mod)return;
+      chain=chain.then(function(){return P.get(t,f,false).then(function(txt){var r=null;try{r=JSON.parse(txt)}catch(e){}if(r&&r.app==="solargraphs-sync"&&mergeIn(r))ch=true;sy.seen[f.name]=f.mod})});
+    });
+    return chain.then(function(){
+      if(ch){snapKeep(pre);syncApply()}
+      return blobsDown(P,t,byName);
+    }).then(function(){return blobsUp(P,t,byName)}).then(function(){
+      if(!sy.dirty&&!ch&&byName[MYFILE])return;
+      var n=sy.n;
+      return P.put(t,MYFILE,JSON.stringify(myState()),"application/json",byName[MYFILE]).then(function(){if(sy.n===n)sy.dirty=false});
+    }).then(function(){if(ch)toast("Synced changes from your other devices.")});
+  }).then(function(){
+    sy.busy=false;sy.err=false;sy.last=Date.now();dbx.retry=0;sySave();cbRender();
+    if(manual)toast("Synced.");
+    if(sy.again){sy.again=false;syncSoon(400)}
+  }).catch(function(e){
+    sy.busy=false;
+    if(e===401&&P===DBXP&&dbx.retry<1){dbx.tok=null;dbx.retry++;sySave();cbRender();syncSoon(400);return}
+    if(e==="auth"||e===401){if(P===GDP)gd.tok=null;else dbx.tok=null;sy.need=true;if(manual)toast("Couldn’t sign in to "+P.name+".")}
+    else{sy.err=true;if(manual)toast("Couldn’t sync right now. It will try again.")}
+    sySave();cbRender();
+    if(sy.again&&!sy.need){sy.again=false;syncSoon(5000)}
   });
 }
-function driveSoon(){dbxSoon();if(!gd.on)return;clearTimeout(gd.timer);gd.timer=setTimeout(function(){gdBackup(false)},4000)}
+function syncSoon(ms){if(!prov())return;clearTimeout(sy.timer);sy.timer=setTimeout(function(){syncNow(false)},ms||3000)}
+function driveSoon(){syncSoon()}
+document.addEventListener("visibilitychange",function(){if(document.visibilityState==="visible"&&prov()&&Date.now()-sy.last>15000)syncSoon(300)});
+setInterval(function(){if(document.visibilityState==="visible"&&prov()&&!sy.busy&&Date.now()-sy.last>85000)syncNow(false)},30000);
+
+function provReset(){sy.seen={};sy.legacy=false;sy.dirty=true;sy.last=0;sy.need=false;sy.err=false;sySave()}
 function gdConnect(){
-  if(dbx.rt){toast("Disconnect Dropbox first.");return}
-  if(!GCID){toast("Google Drive isn’t set up yet.");return}
+  if(dbx.rt){toast("Sign out of Dropbox first.");return}
   gdToken(true,function(t){
     if(!t){toast("Couldn’t sign in to Google.");return}
-    gd.on=true;gd.need=false;gdSave();gd.busy=true;gdRender();
-    gdFind(t).then(function(f){
-      if(!f)return null;
-      return gdGet(t,f.id).then(function(text){restore(text,true)})
-    }).then(function(){gd.busy=false;gdBackup(true)}).catch(gdFail);
-  });
-}
-function gdRestore(){
-  gdToken(true,function(t){
-    if(!t){toast("Couldn’t sign in to Google.");return}
-    gdFind(t).then(function(f){
-      if(!f){toast("No backup found in your Google Drive yet.");return}
-      return gdGet(t,f.id).then(function(text){restore(text)})
-    }).catch(function(e){if(e===401)gd.tok=null;toast("Couldn’t read your Google Drive backup.")});
+    if(!gd.on)provReset();gd.on=true;sy.need=false;gdSave();syncNow(true);
   });
 }
 function gdOff(){
   try{if(gd.tok&&window.google&&google.accounts&&google.accounts.oauth2)google.accounts.oauth2.revoke(gd.tok,function(){})}catch(e){}
-  gd.tok=null;gd.on=false;gd.need=false;gdSave();gdRender();toast("Disconnected. Your backup stays in Google Drive.");
+  gd.tok=null;gd.on=false;try{localStorage.removeItem(KEY+"-gtok")}catch(e){}gdSave();provReset();cbRender();toast("Signed out. Your cameras stay on this device.");
 }
-function gdRender(){cbRender()}
-var DBXKEY="5ne5sn335j2l3eg";
-var dbx={tok:null,exp:0,rt:"",busy:false,again:false,need:false,last:0,size:0,timer:null};
-try{dbx.rt=localStorage.getItem(KEY+"-dbx")||"";dbx.last=+localStorage.getItem(KEY+"-dbxlast")||0;dbx.size=+localStorage.getItem(KEY+"-dbxsize")||0}catch(e){}
-function dbxSave(){try{if(dbx.rt)localStorage.setItem(KEY+"-dbx",dbx.rt);else localStorage.removeItem(KEY+"-dbx");localStorage.setItem(KEY+"-dbxlast",String(dbx.last));localStorage.setItem(KEY+"-dbxsize",String(dbx.size))}catch(e){}}
-function dbxRedir(){return location.origin+location.pathname.replace(/index\.html$/,"")}
-function b64u(buf){var s="",a=new Uint8Array(buf);for(var k=0;k<a.length;k++)s+=String.fromCharCode(a[k]);return btoa(s).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"")}
 function dbxConnect(){
-  if(gd.on){toast("Disconnect Google Drive first.");return}
+  if(gd.on){toast("Sign out of Google first.");return}
   if(!DBXKEY){toast("Dropbox isn’t set up yet.");return}
   var rnd=new Uint8Array(32);crypto.getRandomValues(rnd);var ver=b64u(rnd);
   crypto.subtle.digest("SHA-256",new TextEncoder().encode(ver)).then(function(h){
@@ -1106,85 +1265,44 @@ function dbxConnect(){
     location.href="https://www.dropbox.com/oauth2/authorize?client_id="+encodeURIComponent(DBXKEY)+"&response_type=code&token_access_type=offline&code_challenge_method=S256&code_challenge="+b64u(h)+"&redirect_uri="+encodeURIComponent(dbxRedir())+"&state=dbx";
   }).catch(function(){toast("Couldn’t start sign-in here.")});
 }
-function dbxTok(body){
-  return fetch("https://api.dropboxapi.com/oauth2/token",{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded"},body:body}).then(function(r){if(!r.ok)throw r.status;return r.json()});
-}
-function dbxToken(cb){
-  if(dbx.tok&&Date.now()<dbx.exp-60000)return cb(dbx.tok);
-  if(!dbx.rt)return cb(null);
-  dbxTok("grant_type=refresh_token&refresh_token="+encodeURIComponent(dbx.rt)+"&client_id="+encodeURIComponent(DBXKEY)).then(function(j){dbx.tok=j.access_token;dbx.exp=Date.now()+(+j.expires_in||14400)*1000;dbx.need=false;cb(dbx.tok)}).catch(function(e){if(e===400||e===401)dbx.need=true;cb(null)});
-}
-function dbxGet(t){
-  return fetch("https://content.dropboxapi.com/2/files/download",{method:"POST",headers:{Authorization:"Bearer "+t,"Dropbox-API-Arg":JSON.stringify({path:"/solargraph-backup.json"})}}).then(function(r){if(r.status===409)return null;if(!r.ok)throw r.status;return r.text()});
-}
-function dbxPut(t,text){
-  return fetch("https://content.dropboxapi.com/2/files/upload",{method:"POST",headers:{Authorization:"Bearer "+t,"Content-Type":"application/octet-stream","Dropbox-API-Arg":JSON.stringify({path:"/solargraph-backup.json",mode:"overwrite",mute:true})},body:text}).then(function(r){if(!r.ok)throw r.status;return r.json()});
-}
-function dbxFail(e){
-  dbx.busy=false;
-  if(e===401){dbx.tok=null;dbx.need=true}
-  else toast("Couldn’t back up to Dropbox. Will try again after your next change.");
-  dbxRender();
-}
-function dbxBackup(manual){
-  if(!dbx.rt)return;
-  if(dbx.busy){dbx.again=true;return}
-  dbx.busy=true;dbxRender();
-  dbxToken(function(t){
-    if(!t){dbx.busy=false;dbxRender();if(manual)toast("Couldn’t sign in to Dropbox.");return}
-    var text=backupData(true);
-    dbxPut(t,text).then(function(){
-      dbx.last=Date.now();dbx.size=text.length;dbx.busy=false;dbxSave();dbxRender();
-      if(manual)toast("Backed up to Dropbox ("+fmtB(text.length)+").");
-      if(dbx.again){dbx.again=false;dbxSoon()}
-    }).catch(dbxFail);
-  });
-}
-function dbxSoon(){if(!dbx.rt)return;clearTimeout(dbx.timer);dbx.timer=setTimeout(function(){dbxBackup(false)},4000)}
-function dbxRestore(){
-  dbxToken(function(t){
-    if(!t){toast("Couldn’t sign in to Dropbox.");return}
-    dbxGet(t).then(function(text){if(text==null){toast("No backup found in your Dropbox yet.");return}restore(text)}).catch(function(){toast("Couldn’t read your Dropbox backup.")});
-  });
-}
-function dbxOff(){dbx.tok=null;dbx.rt="";dbx.need=false;dbxSave();dbxRender();toast("Disconnected. Your backup stays in Dropbox.")}
+function dbxOff(){dbx.tok=null;dbx.rt="";dbxSave();provReset();cbRender();toast("Signed out. Your cameras stay on this device.")}
 function dbxReturn(){
   var q;try{q=new URLSearchParams(location.search)}catch(e){return}
   if(q.get("state")!=="dbx"||(!q.get("code")&&!q.get("error")))return;
   var code=q.get("code");try{history.replaceState(null,"",location.pathname)}catch(e){}
+  if(window.setScreen)setScreen("account");
   if(!code){toast("Dropbox sign-in was cancelled.");return}
   var ver="";try{ver=localStorage.getItem(KEY+"-dbxver")||"";localStorage.removeItem(KEY+"-dbxver")}catch(e){}
   if(!ver){toast("Dropbox sign-in didn’t finish. Please try again.");return}
   dbxTok("grant_type=authorization_code&code="+encodeURIComponent(code)+"&client_id="+encodeURIComponent(DBXKEY)+"&code_verifier="+encodeURIComponent(ver)+"&redirect_uri="+encodeURIComponent(dbxRedir())).then(function(j){
-    dbx.tok=j.access_token;dbx.exp=Date.now()+(+j.expires_in||14400)*1000;dbx.rt=j.refresh_token||"";dbx.need=false;dbxSave();
-    if(window.setScreen)setScreen("account");
-    dbx.busy=true;dbxRender();
-    return dbxGet(dbx.tok).then(function(text){if(text!=null)restore(text,true)}).then(function(){dbx.busy=false;dbxBackup(true)});
+    if(!j.refresh_token)throw 0;
+    provReset();dbx.tok=j.access_token;dbx.exp=Date.now()+(+j.expires_in||14400)*1000;dbx.rt=j.refresh_token;dbxSave();
+    syncNow(true);
   }).catch(function(){toast("Couldn’t sign in to Dropbox.")});
 }
+function gdRender(){cbRender()}
 function dbxRender(){cbRender()}
 function cbRender(){
   var n=$("cbNote"),a=$("cbActs");if(!n||!a)return;
   var G='<svg viewBox="0 0 48 48" width="20" height="20" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9.1 3.6l6.8-6.8C35.8 2.4 30.3 0 24 0 14.6 0 6.5 5.4 2.6 13.2l7.9 6.1C12.4 13.6 17.7 9.5 24 9.5z"/><path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v9h12.7c-.6 3-2.3 5.5-4.8 7.2l7.6 5.9c4.4-4.1 7-10.1 7-17.6z"/><path fill="#FBBC05" d="M10.5 28.7c-.5-1.4-.8-3-.8-4.7s.3-3.2.8-4.7l-7.9-6.1C.9 16.500 0 20.100 0 24s.9 7.500 2.600 10.800l7.900-6.100z"/><path fill="#34A853" d="M24 48c6.500 0 11.900-2.100 15.900-5.800l-7.600-5.900c-2.100 1.400-4.900 2.300-8.300 2.300-6.300 0-11.600-4.100-13.500-9.800l-7.900 6.100C6.500 42.600 14.600 48 24 48z"/></svg>',D='<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="#0061FF" d="M6 1.807L0 5.629l6 3.822 6.001-3.822L6 1.807zM18 1.807l-6 3.822 6 3.822 6-3.822-6-3.822zM0 13.274l6 3.822 6.001-3.822L6 9.452l-6 3.822zM18 9.452l-6 3.822 6 3.822 6-3.822-6-3.822zM6 18.371l6.001 3.822 6-3.822-6-3.822L6 18.371z"/></svg>';
   var b=function(id,t,cls,ic){return '<button type="button" id="'+id+'" class="'+(cls||"cbb")+'">'+(ic||"")+'<span>'+t+'</span></button>'};
-  var when=function(t,z){return "Backed up "+new Date(t).toLocaleString([],{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"})+" ("+fmtB(z)+")"};
-  if(!GCID&&!DBXKEY){n.textContent="Cloud backup isn’t set up yet.";a.innerHTML="";return}
-  if(!gd.on&&!dbx.rt){
-    n.textContent="Back up your cameras and photos to your own cloud account. It saves automatically after every change.";
+  var P=prov();
+  if(!P){
+    n.textContent="Sign in to keep your cameras and photos in step on all your devices, saved in your own cloud account.";
     a.innerHTML=(GCID?b("gdOn","Continue with Google","cbb",G):"")+(DBXKEY?b("dbxOn","Continue with Dropbox","cbb",D):"");
-  }else if(gd.on){
-    var s=gd.busy?"Backing up…":gd.need?"Signed out. Tap Reconnect to continue.":gd.last?when(gd.last,gd.size):"Waiting for the first backup.";
-    n.textContent="Signed in with Google. "+s;
-    a.innerHTML='<div class="acts">'+(gd.need?b("gdOn","Reconnect","primary"):b("gdNow","Back up now","ab"))+b("gdRes","Restore","ab")+b("gdOff","Sign out","ab")+'</div>';
   }else{
-    var s2=dbx.busy?"Backing up…":dbx.need?"Signed out. Tap Reconnect to continue.":dbx.last?when(dbx.last,dbx.size):"Waiting for the first backup.";
-    n.textContent="Signed in with Dropbox. "+s2;
-    a.innerHTML='<div class="acts">'+(dbx.need?b("dbxOn","Reconnect","primary"):b("dbxNow","Back up now","ab"))+b("dbxRes","Restore","ab")+b("dbxOff","Sign out","ab")+'</div>';
+    var s=sy.busy?"Syncing…":sy.need?"Signed out. Tap Reconnect to keep syncing.":sy.err?"Couldn’t sync last time. It will try again.":sy.last?"Synced "+new Date(sy.last).toLocaleString([],{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"})+".":"Not synced yet.";
+    n.textContent="Signed in with "+P.name+". "+s;
+    var on=P===GDP?"gd":"dbx";
+    a.innerHTML='<div class="acts">'+(sy.need?b(on+"On","Reconnect","primary"):b("syNow","Sync now","ab"))+b(on+"Off","Sign out","ab")+'</div>'+(snapList().length?'<button type="button" id="syUndo" class="lnk syundo">Undo last sync</button>':'');
   }
-  var x;(x=$("gdOn"))&&x.addEventListener("click",gdConnect);(x=$("gdNow"))&&x.addEventListener("click",function(){gd.need=false;gdBackup(true)});(x=$("gdRes"))&&x.addEventListener("click",gdRestore);(x=$("gdOff"))&&x.addEventListener("click",gdOff);
-  (x=$("dbxOn"))&&x.addEventListener("click",dbxConnect);(x=$("dbxNow"))&&x.addEventListener("click",function(){dbxBackup(true)});(x=$("dbxRes"))&&x.addEventListener("click",dbxRestore);(x=$("dbxOff"))&&x.addEventListener("click",dbxOff);
+  var x;(x=$("gdOn"))&&x.addEventListener("click",gdConnect);(x=$("gdOff"))&&x.addEventListener("click",gdOff);
+  (x=$("dbxOn"))&&x.addEventListener("click",dbxConnect);(x=$("dbxOff"))&&x.addEventListener("click",dbxOff);
+  (x=$("syNow"))&&x.addEventListener("click",function(){syncNow(true)});
+  (x=$("syUndo"))&&x.addEventListener("click",function(){if(this.getAttribute("data-c")){undoSync();return}this.setAttribute("data-c","1");this.textContent="Tap again to undo the last sync"});
 }
-gdRender();dbxRender();
+cbRender();
+
 function loadForm(i,putUp){
   editId=i.id;photoData=null;orig={type:i.type,paper:i.paper};fillPicks();
   $("name").value=i.name;$("area").value=i.area||"";$("idea").checked=putUp?false:!i.start;
@@ -1324,7 +1442,7 @@ function gsavePend(){try{localStorage.setItem(KEY+"-gpend",JSON.stringify(gpend)
 function gSnap(){gLast={};gal.forEach(function(g){gLast[g.id]=gsig(g)})}
 function gMark(){var ch=false,ids={};gal.forEach(function(g){ids[g.id]=1;var s=gsig(g);if(gLast[g.id]!==s){gpend.up[g.id]=s;delete gpend.del[g.id];ch=true}gLast[g.id]=s});Object.keys(gLast).forEach(function(id){if(!ids[id]){delete gLast[id];delete gpend.up[id];gpend.del[id]=1;ch=true}});if(ch)gsavePend()}
 function gload(){try{gal=JSON.parse(localStorage.getItem(GKEY)||"[]");if(!Array.isArray(gal))gal=[]}catch(e){gal=[]}}
-function gsave(){gMark();driveSoon();try{localStorage.setItem(GKEY,JSON.stringify(gal));return true}catch(e){toast("Couldn’t save the gallery on this device. Browser storage may be full.");return false}}
+function gsave(){gstamp();gMark();syncSoon();try{localStorage.setItem(GKEY,JSON.stringify(gal));return true}catch(e){toast("Couldn’t save the gallery on this device. Browser storage may be full.");return false}}
 function gsig(g){return JSON.stringify(g,Object.keys(g).sort())}
 function gdoc(g){var d={};Object.keys(g).forEach(function(k){if(k==="id"||g[k]===undefined)return;if(k==="full"&&/^data:/.test(g[k]||""))return;d[k]=g[k]});return d}
 function gpush(g){
@@ -1338,7 +1456,7 @@ function renderGallery(){
   var el=$("galList");if(!el)return;
   if(!gal.length){el.innerHTML='<p class="gempty">No photos yet. Tap + to add a scan, or save one from Quick scan.</p>';return}
   var sorted=gal.slice().sort(function(a,b){return (b.ts||0)-(a.ts||0)});
-  el.innerHTML=sorted.map(function(g){var it=gtitle(g);return '<button type="button" class="gt" data-g="'+esc(g.id)+'"><img src="'+g.thumb+'" alt="">'+(it?'<span>'+esc(it.name)+(it.area?' <i>'+esc(it.area)+'</i>':'')+'</span>':'')+'</button>'}).join("");
+  el.innerHTML=sorted.map(function(g){var it=gtitle(g);return '<button type="button" class="gt" data-g="'+esc(g.id)+'"><img src="'+(g.thumb||"data:image/gif;base64,R0lGODlhAQABAAAAACw=")+'" alt="">'+(it?'<span>'+esc(it.name)+(it.area?' <i>'+esc(it.area)+'</i>':'')+'</span>':'')+'</button>'}).join("");
 }
 var gOffline=false,OFFMSG=" No signal right now, so it’s kept on this phone and will upload next time you open the app.";
 function gStore(cv,link,done){
@@ -1538,7 +1656,7 @@ try{if(!localStorage.getItem(KEY+"-guide")&&!localStorage.getItem(KEY))setTimeou
 function setHints(on,msg){document.body.classList.toggle("showhints",on);var b=$("formHelp");b.classList.toggle("on",on);b.setAttribute("aria-pressed",on?"true":"false");try{localStorage.setItem(KEY+"-hints",on?"1":"0")}catch(e){}if(msg)toast(on?"Descriptions shown.":"Descriptions hidden.")}
 try{setHints(localStorage.getItem(KEY+"-hints")==="1",false)}catch(e){}
 $("formHelp").addEventListener("click",function(){setHints(!document.body.classList.contains("showhints"),true)});
-load();if(split()){try{localStorage.setItem(KEY,JSON.stringify(items))}catch(e){}}snapSigs();gload();gSnap();reset();render();renderGallery();setPane(1,false);initCloud();
+load();if(split()){try{localStorage.setItem(KEY,JSON.stringify(items))}catch(e){}}snapSigs();gload();gSnap();syncInit();reset();render();renderGallery();setPane(1,false);initCloud();
 window.addEventListener("resize",function(){requestAnimationFrame(fitBig)});try{document.fonts.ready.then(fitBig)}catch(e){}
 var lastDay=ymd();function dayCheck(){if(ymd()!==lastDay){lastDay=ymd();render()}}setInterval(dayCheck,60000);document.addEventListener("visibilitychange",function(){if(!document.hidden)dayCheck()});
 })();
