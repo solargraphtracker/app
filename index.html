@@ -1160,15 +1160,57 @@ function undoSync(){
 
 /* providers */
 function gdLib(cb){if(window.google&&google.accounts&&google.accounts.oauth2)return cb(true);var s=document.createElement("script");s.src="https://accounts.google.com/gsi/client";s.onload=function(){cb(true)};s.onerror=function(){cb(false)};document.head.appendChild(s)}
+var GWORKER="";
+var grt="";try{grt=localStorage.getItem(KEY+"-grt")||""}catch(e){}
+function grtSave(){try{if(grt)localStorage.setItem(KEY+"-grt",grt);else localStorage.removeItem(KEY+"-grt")}catch(e){}}
+function gtokSet(j){gd.tok=j.access_token;gd.exp=Date.now()+(+j.expires_in||3600)*1000;try{localStorage.setItem(KEY+"-gtok",JSON.stringify({t:gd.tok,e:gd.exp}))}catch(e){}}
+function gwPost(path,body){
+  return fetch(GWORKER.replace(/\/$/,"")+path,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)}).then(function(r){
+    return r.text().then(function(t){var j={};try{j=JSON.parse(t)}catch(e){}if(!r.ok){var er=new Error(j.error_description||j.error||("error "+r.status));er.code=j.error||r.status;throw er}return j})});
+}
+/* Google sign-in. With the helper (GWORKER) we get a long-lasting key and stay signed in;
+   without it, Google only gives a one-hour key and asks again. */
+function gdCode(cb){
+  gdLib(function(ok){
+    if(!ok)return cb(null);
+    var done=false,fin=function(t){if(done)return;done=true;cb(t)};
+    try{
+      var cc=google.accounts.oauth2.initCodeClient({client_id:GCID,scope:"https://www.googleapis.com/auth/drive.appdata",ux_mode:"popup",
+        callback:function(r){
+          if(!r||!r.code)return fin(null);
+          gwPost("/exchange",{code:r.code}).then(function(j){
+            gtokSet(j);
+            if(j.refresh_token){grt=j.refresh_token;grtSave();return fin(gd.tok)}
+            if(grt)return fin(gd.tok);
+            /* Google skipped the long-lasting key because access was granted before: reset it so the next sign-in gets one */
+            gwPost("/revoke",{token:j.access_token}).catch(function(){}).then(function(){gd.tok=null;gd.almost=true;fin(null)});
+          }).catch(function(){fin(null)});
+        },
+        error_callback:function(){fin(null)}});
+      cc.requestCode();
+    }catch(e){fin(null)}
+  });
+}
 function gdToken(interactive,cb){
   if(gd.tok&&Date.now()<gd.exp-60000)return cb(gd.tok);
   if(!GCID)return cb(null);
+  if(GWORKER){
+    if(grt){
+      gwPost("/refresh",{refresh_token:grt}).then(function(j){gtokSet(j);cb(gd.tok)}).catch(function(e){
+        if(e.code==="invalid_grant"){grt="";grtSave()}
+        if(interactive&&!grt)gdCode(cb);else cb(null);
+      });
+      return;
+    }
+    if(interactive)return gdCode(cb);
+    return cb(null);
+  }
   gdLib(function(ok){
     if(!ok)return cb(null);
     var done=false,fin=function(t){if(done)return;done=true;cb(t)};
     try{
       var tc=google.accounts.oauth2.initTokenClient({client_id:GCID,scope:"https://www.googleapis.com/auth/drive.appdata",
-        callback:function(r){if(r&&r.access_token){gd.tok=r.access_token;gd.exp=Date.now()+(+r.expires_in||3600)*1000;try{localStorage.setItem(KEY+"-gtok",JSON.stringify({t:gd.tok,e:gd.exp}))}catch(e){}fin(gd.tok)}else fin(null)},
+        callback:function(r){if(r&&r.access_token){gtokSet(r);fin(gd.tok)}else fin(null)},
         error_callback:function(){fin(null)}});
       tc.requestAccessToken({prompt:interactive?"":"none"});
       if(!interactive)setTimeout(function(){fin(null)},20000);
@@ -1283,13 +1325,13 @@ function provReset(){sy.seen={};sy.legacy=false;sy.dirty=true;sy.last=0;sy.need=
 function gdConnect(){
   if(dbx.rt){toast("Sign out of Dropbox first.");return}
   gdToken(true,function(t){
-    if(!t){toast("Couldn’t sign in to Google.");return}
+    if(!t){if(gd.almost){gd.almost=false;if(!gd.on){gd.on=true;gdSave();provReset()}sy.need=true;sySave();cbRender();toast("Almost there: tap Reconnect once more to finish signing in.")}else toast("Couldn’t sign in to Google.");return}
     if(!gd.on)provReset();gd.on=true;sy.need=false;gdSave();syncNow(true);
   });
 }
 function gdOff(){
-  try{if(gd.tok&&window.google&&google.accounts&&google.accounts.oauth2)google.accounts.oauth2.revoke(gd.tok,function(){})}catch(e){}
-  gd.tok=null;gd.on=false;try{localStorage.removeItem(KEY+"-gtok")}catch(e){}gdSave();provReset();cbRender();toast("Signed out. Your cameras stay on this device.");
+  try{if(GWORKER&&grt)gwPost("/revoke",{token:grt}).catch(function(){});else if(gd.tok&&window.google&&google.accounts&&google.accounts.oauth2)google.accounts.oauth2.revoke(gd.tok,function(){})}catch(e){}
+  grt="";grtSave();gd.tok=null;gd.on=false;try{localStorage.removeItem(KEY+"-gtok")}catch(e){}gdSave();provReset();cbRender();toast("Signed out. Your cameras stay on this device.");
 }
 function dbxConnect(){
   if(gd.on){toast("Sign out of Google first.");return}
