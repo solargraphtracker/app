@@ -1158,7 +1158,8 @@ function gstamp(){
   if(ch){sy.dirty=true;sy.n++;deadSave();sySave()}
 }
 function prefStamp(which){if(seeding)return;if(which==="opts")optsU=Date.now();else sortU=Date.now();sy.dirty=true;sy.n++;deadSave();sySave();syncSoon()}
-function iRec(i){var o={};Object.keys(i).forEach(function(k){if(k!=="photo")o[k]=i[k]});return o}
+function isUrl(v){return typeof v==="string"&&/^https?:\/\//.test(v)}
+function iRec(i){var o={};Object.keys(i).forEach(function(k){if(k!=="photo"||isUrl(i.photo))o[k]=i[k]});return o}
 function gRec(g){var o={};Object.keys(g).forEach(function(k){if(k!=="thumb"&&k!=="full")o[k]=g[k]});return o}
 function myState(){return {app:"solargraphs-sync",v:1,dev:DEV,at:Date.now(),items:items.map(iRec),dead:dead,gal:gal.map(gRec),gdead:gdead,opts:{v:opts,u:optsU},sort:{v:sortSel,u:sortU},gsort:{v:gsortSel,u:gsortU}}}
 
@@ -1171,8 +1172,9 @@ function mergeIn(r){
   (Array.isArray(r.items)?r.items:[]).forEach(function(x){
     if(!x||!x.id||!x.name)return;var u=+x.u||0;if((dead[x.id]||0)>=u)return;
     var n=idx[x.id],it=Object.assign({},x);
-    if(n===undefined){it.photo=null;items.push(it);idx[x.id]=items.length-1;ch=true}
-    else if(u>(+items[n].u||0)||(u===(+items[n].u||0)&&fsig(x,ISKIP)+(x.ph||"")>fsig(items[n],ISKIP)+(items[n].ph||""))){it.photo=items[n].photo||null;if(!x.ph)delete pstore[x.id];items[n]=it;ch=true}
+    if(n===undefined){it.photo=isUrl(x.photo)?x.photo:null;items.push(it);idx[x.id]=items.length-1;ch=true}
+    else if(!(u>(+items[n].u||0))&&isUrl(x.photo)&&!items[n].photo&&!pstore[x.id]&&!x.ph){items[n].photo=x.photo;ch=true}
+    else if(u>(+items[n].u||0)||(u===(+items[n].u||0)&&fsig(x,ISKIP)+(x.ph||"")>fsig(items[n],ISKIP)+(items[n].ph||""))){it.photo=items[n].photo||(isUrl(x.photo)&&!x.ph?x.photo:null);if(!x.ph)delete pstore[x.id];items[n]=it;ch=true}
   });
   var b=items.length;items=items.filter(function(i){return (dead[i.id]||0)<(+i.u||0)});if(items.length!==b)ch=true;
   gal.forEach(function(g,n){gidx[g.id]=n});
@@ -1943,14 +1945,25 @@ function setHints(on,msg){document.body.classList.toggle("showhints",on);var b=$
 try{setHints(localStorage.getItem(KEY+"-hints")==="1",false)}catch(e){}
 $("formHelp").addEventListener("click",function(){setHints(!document.body.classList.contains("showhints"),true)});
 load();if(split()){try{localStorage.setItem(KEY,JSON.stringify(items))}catch(e){}}snapSigs();gload();gSnap();reset();render();renderGallery();setPane(1,false);initCloud();
-photosInit(function(){syncInit();render();renderGallery()});
+photosInit(function(){syncInit();render();renderGallery();setTimeout(adoptPhotos,1500)});
+var adoptTried={};
+function adoptPhotos(){
+  var todo=items.filter(function(i){return isUrl(i.photo)&&!pstore[i.id]&&!adoptTried[i.id]});
+  var chain=Promise.resolve(),got=0;
+  todo.forEach(function(i){adoptTried[i.id]=1;chain=chain.then(function(){
+    return fetch(i.photo,{mode:"cors",credentials:"omit"}).then(function(r){if(!r.ok)throw r.status;return r.blob()}).then(function(b){if(!/^image\//.test(b.type)&&b.size<1000)throw 0;return blobUrl(b)}).then(function(d){
+      var cur=items.find(function(x){return x.id===i.id});if(!cur||cur.photo!==i.photo)return;cur.photo=d;got++;
+    }).catch(function(){});
+  })});
+  chain.then(function(){if(got){persist();render()}});
+}
 window.addEventListener("resize",function(){requestAnimationFrame(fitBig)});try{document.fonts.ready.then(fitBig)}catch(e){}
 var lastDay=ymd();function dayCheck(){if(ymd()!==lastDay){lastDay=ymd();render()}}setInterval(dayCheck,60000);document.addEventListener("visibilitychange",function(){if(!document.hidden)dayCheck()});
 })();
 </script>
 <!-- DEV BUILD LIGHT (temporary, remove later): colour changes with every deploy -->
 <div id="devLight" aria-hidden="true" style="position:absolute;top:1px;right:23px;width:8px;height:8px;border-radius:50%;z-index:9999;pointer-events:none;box-shadow:0 0 6px currentColor;background:currentColor"></div>
-<script>try{document.getElementById("bar").appendChild(document.getElementById("devLight"))}catch(e){}var DEVBUILD=12;(function(){var c=["#ff3b30","#0a84ff","#30d158","#bf5af2","#ffd60a"];document.getElementById("devLight").style.color=c[DEVBUILD%5]})();</script>
+<script>try{document.getElementById("bar").appendChild(document.getElementById("devLight"))}catch(e){}var DEVBUILD=13;(function(){var c=["#ff3b30","#0a84ff","#30d158","#bf5af2","#ffd60a"];document.getElementById("devLight").style.color=c[DEVBUILD%5]})();</script>
 <!-- /DEV BUILD LIGHT -->
 </body>
 </html>
