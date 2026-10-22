@@ -601,7 +601,7 @@ html:root[data-skin=sunrise] .top h1{font-size:min(11.58px,calc((100vw - 98px) *
 <section class="screen" id="account"><h2>Backup</h2><div class="sgroup"><div class="mh first">Cloud sync</div><p class="meta" id="cbNote"></p><div id="cbActs"></div><p class="meta" id="cbFoot">Syncs automatically. On iPhone, sign in from the <button type="button" class="inlnk" id="homeHow">home-screen app</button>, as it keeps its data separate from Safari.</p></div><div id="manual"><p class="meta" id="cloudNote" style="display:none"></p><p class="meta" id="bkNote" style="display:none"></p>
 <div class="mcols"><div class="sgroup mcol"><div class="mh first">Backup as text</div><button type="button" id="bk">Copy backup</button><p class="meta">Photos aren’t saved. Fits in Notes.</p><div class="mrest"><textarea id="paste" rows="3" placeholder="Paste backup text here"></textarea><button type="button" id="rp">Restore from text</button></div></div>
 <div class="sgroup mcol"><div class="mh first">Backup as file</div><button type="button" id="bkf">Save backup file</button><p class="meta">With photos. Saves to your Files app.</p><div class="mrest"><p class="meta mpick">Pick a saved backup file.</p><button type="button" id="rpf">Restore from file</button><input type="file" id="rpFile" accept=".json,application/json,text/plain" style="display:none"></div></div></div></div></section>
-<section class="screen" id="settings"><h2>Settings</h2><div class="sgroup"><div class="mh first">Help</div><button type="button" id="helpItem"><span class="mi">?</span>How it works</button></div><div class="sgroup"><div class="mh first">Themes</div><div id="themeMenu" role="group"></div></div><div class="sgroup"><div class="mh first">Sorting</div><div class="srt"><label for="srt0">Scouting</label><select id="srt0"></select></div><div class="srt"><label for="srt1">Live</label><select id="srt1"></select></div><div class="srt"><label for="srt2">Vault</label><select id="srt2"></select></div></div><div class="sgroup"><div class="mh first">Sound</div><div class="mrow" id="musT" role="switch" aria-checked="false" tabindex="0"><span>Music</span><span class="tgl"><i></i></span></div><div class="mrow vrow"><label for="musV">Volume</label><input type="range" id="musV" min="0" max="100" step="1" value="60"></div><div class="mrow np" id="musNp"><span></span></div></div><div class="sgroup"><div class="mh first">What3words</div><div class="w3x"><p>what3words gives every 3 metre square on Earth its own three-word address, like <b>///filled.count.soap</b>. It&rsquo;s much easier to note down and share than coordinates, and it&rsquo;s free to use.</p><p>In this app, it&rsquo;s how you record exactly where a camera is hidden. Find your spot in the what3words app, copy its three words, and paste them into the <b>what3words address</b> field when you add or edit a camera. You can paste a what3words link too.</p><a class="w3a" href="https://what3words.com" target="_blank" rel="noopener">Open what3words.com</a></div></div><div class="sgroup"><div class="mh first">Storage</div><div style="padding:2px 10px 10px"><div class="stbar"><i id="stFill"></i></div><div id="stTxt" class="meta"></div></div></div></section>
+<section class="screen" id="settings"><h2>Settings</h2><div class="sgroup"><div class="mh first">Help</div><button type="button" id="helpItem"><span class="mi">?</span>How it works</button></div><div class="sgroup"><div class="mh first">Themes</div><div id="themeMenu" role="group"></div></div><div class="sgroup"><div class="mh first">Sorting</div><div class="srt"><label for="srt0">Scouting</label><select id="srt0"></select></div><div class="srt"><label for="srt1">Live</label><select id="srt1"></select></div><div class="srt"><label for="srt2">Vault</label><select id="srt2"></select></div><div class="srt"><label for="srt3">Gallery</label><select id="srt3"></select></div></div><div class="sgroup"><div class="mh first">Sound</div><div class="mrow" id="musT" role="switch" aria-checked="false" tabindex="0"><span>Music</span><span class="tgl"><i></i></span></div><div class="mrow vrow"><label for="musV">Volume</label><input type="range" id="musV" min="0" max="100" step="1" value="60"></div><div class="mrow np" id="musNp"><span></span></div></div><div class="sgroup"><div class="mh first">What3words</div><div class="w3x"><p>what3words gives every 3 metre square on Earth its own three-word address, like <b>///filled.count.soap</b>. It&rsquo;s much easier to note down and share than coordinates, and it&rsquo;s free to use.</p><p>In this app, it&rsquo;s how you record exactly where a camera is hidden. Find your spot in the what3words app, copy its three words, and paste them into the <b>what3words address</b> field when you add or edit a camera. You can paste a what3words link too.</p><a class="w3a" href="https://what3words.com" target="_blank" rel="noopener">Open what3words.com</a></div></div><div class="sgroup"><div class="mh first">Storage</div><div style="padding:2px 10px 10px"><div class="stbar"><i id="stFill"></i></div><div id="stTxt" class="meta"></div></div></div></section>
 
 <button id="fab" aria-label="Add solargraph">+</button>
 <button type="button" id="srchBtn" aria-label="Search" aria-expanded="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M20 20l-4-4"/></svg></button>
@@ -1159,7 +1159,7 @@ function gstamp(){
 function prefStamp(which){if(seeding)return;if(which==="opts")optsU=Date.now();else sortU=Date.now();sy.dirty=true;sy.n++;deadSave();sySave();syncSoon()}
 function iRec(i){var o={};Object.keys(i).forEach(function(k){if(k!=="photo")o[k]=i[k]});return o}
 function gRec(g){var o={};Object.keys(g).forEach(function(k){if(k!=="thumb"&&k!=="full")o[k]=g[k]});return o}
-function myState(){return {app:"solargraphs-sync",v:1,dev:DEV,at:Date.now(),items:items.map(iRec),dead:dead,gal:gal.map(gRec),gdead:gdead,opts:{v:opts,u:optsU},sort:{v:sortSel,u:sortU}}}
+function myState(){return {app:"solargraphs-sync",v:1,dev:DEV,at:Date.now(),items:items.map(iRec),dead:dead,gal:gal.map(gRec),gdead:gdead,opts:{v:opts,u:optsU},sort:{v:sortSel,u:sortU},gsort:{v:gsortSel,u:gsortU}}}
 
 /* merge another device's state into ours: newest change wins per camera/photo, deletions win over older edits */
 function mergeIn(r){
@@ -1183,6 +1183,7 @@ function mergeIn(r){
   });
   b=gal.length;gal=gal.filter(function(g){return (gdead[g.id]||0)<(+g.u||0)});if(gal.length!==b)ch=true;
   if(r.opts&&r.opts.v&&+r.opts.u>optsU&&Array.isArray(r.opts.v.type)&&Array.isArray(r.opts.v.paper)){opts={type:r.opts.v.type.map(String),paper:r.opts.v.paper.map(String)};optsU=+r.opts.u;needSeed=false;ch=true}
+  if(r.gsort&&+r.gsort.u>gsortU&&GSORTS.some(function(o){return o[0]===r.gsort.v})){gsortSel=r.gsort.v;gsortU=+r.gsort.u;gsortSave(true);ch=true}
   if(r.sort&&Array.isArray(r.sort.v)&&r.sort.v.length===3&&+r.sort.u>sortU){sortSel=r.sort.v.map(function(v,n){return SORTOPTS[n].some(function(o){return o[0]===v})?v:SORTDEF[n]});sortU=+r.sort.u;ch=true}
   return ch;
 }
@@ -1194,7 +1195,7 @@ function syncApply(){
   gWrite();
   try{localStorage.setItem(KEY+"-opts",JSON.stringify(opts));localStorage.setItem(KEY+"-sort",JSON.stringify(sortSel))}catch(e){}
   deadSave();try{snapSigs();gSnap()}catch(e){}
-  try{fillPicks();fillSort()}catch(e){}
+  try{fillPicks();fillSort();$("srt3").value=gsortSel}catch(e){}
   render();renderGallery();
 }
 
@@ -1684,10 +1685,23 @@ function gpush(g){
 }
 function gsync(){if(gcol)gal.forEach(gpush)}
 function gtitle(g){var it=g.link?items.find(function(x){return x.id===g.link}):null;return it}
+var GSORTS=[["new","Newest first"],["old","Oldest first"],["cam","Camera A–Z"],["area","Area A–Z"]],gsortSel="new",gsortU=0;
+try{var gs0=localStorage.getItem(KEY+"-gsort");if(GSORTS.some(function(o){return o[0]===gs0}))gsortSel=gs0;gsortU=+localStorage.getItem(KEY+"-gsortu")||0}catch(e){}
+function gSorter(a,b){
+  var t=(b.ts||0)-(a.ts||0);
+  if(gsortSel==="old")return -t;
+  if(gsortSel==="cam"||gsortSel==="area"){
+    var ia=gtitle(a),ib=gtitle(b),ka=ia?String(gsortSel==="cam"?ia.name:ia.area||"").toLowerCase():"",kb=ib?String(gsortSel==="cam"?ib.name:ib.area||"").toLowerCase():"";
+    if(!ka!==!kb)return ka?-1:1;
+    var c=ka.localeCompare(kb);return c||t;
+  }
+  return t;
+}
+function gsortSave(fromSync){try{localStorage.setItem(KEY+"-gsort",gsortSel);localStorage.setItem(KEY+"-gsortu",String(gsortU))}catch(e){}}
 function renderGallery(){
   var el=$("galList");if(!el)return;
   if(!gal.length){el.innerHTML='<p class="gempty">No photos yet. Tap + to add a scan, or save one from Quick scan.</p>';return}
-  var sorted=gal.slice().sort(function(a,b){return (b.ts||0)-(a.ts||0)});
+  var sorted=gal.slice().sort(gSorter);
   el.innerHTML=sorted.map(function(g){var it=gtitle(g);return '<button type="button" class="gt" data-g="'+esc(g.id)+'"><img src="'+(g.thumb||"data:image/gif;base64,R0lGODlhAQABAAAAACw=")+'" alt="">'+(it?'<span>'+esc(it.name)+(it.area?' <i>'+esc(it.area)+'</i>':'')+'</span>':'')+'</button>'}).join("");
 }
 var gOffline=false,OFFMSG=" No signal right now, so it’s kept on this phone and will upload next time you open the app.";
@@ -1837,6 +1851,7 @@ function curSkin(){return document.documentElement.getAttribute("data-skin")||"s
 function renderSkins(){var c=curSkin();$("themeMenu").innerHTML=SKINS.map(function(k){return '<button type="button" role="menuitemradio" aria-checked="'+(k.id===c)+'" data-skin="'+k.id+'" class="'+(k.id===c?"on":"")+'"><span class="sw">'+k.sw.map(function(x){return '<i style="background:'+x+'"></i>'}).join("")+'</span>'+k.name+'</button>'}).join("")}
 function applySkin(id,save){if(!SKINS.some(function(k){return k.id===id}))id="session";document.documentElement.setAttribute("data-skin",id);try{localStorage.setItem(KEY+"-theme",id)}catch(e){}renderSkins();try{fitBig()}catch(e){}if(save&&skinRef){try{skinRef.set({skin:id}).catch(function(){})}catch(e){}}}
 fillSort();
+(function(){var el=$("srt3");el.innerHTML=GSORTS.map(function(o){return '<option value="'+o[0]+'">'+o[1]+'</option>'}).join("");el.value=gsortSel;el.addEventListener("change",function(){gsortSel=this.value;gsortU=Date.now();gsortSave();sy.dirty=true;sy.n++;sySave();syncSoon();renderGallery()})})();
 [0,1,2].forEach(function(n){$("srt"+n).addEventListener("change",function(){sortSel[n]=this.value;saveSort();render()})});
 $("themeMenu").addEventListener("click",function(e){var b=e.target.closest&&e.target.closest("button");if(!b)return;applySkin(b.getAttribute("data-skin"),true)});
 try{applySkin(localStorage.getItem(KEY+"-theme")||"session",false)}catch(e){applySkin("session",false)}
@@ -1904,7 +1919,7 @@ var lastDay=ymd();function dayCheck(){if(ymd()!==lastDay){lastDay=ymd();render()
 </script>
 <!-- DEV BUILD LIGHT (temporary, remove later): colour changes with every deploy -->
 <div id="devLight" aria-hidden="true" style="position:fixed;top:calc(env(safe-area-inset-top,0px) + 42px);right:23px;width:8px;height:8px;border-radius:50%;z-index:9999;pointer-events:none;box-shadow:0 0 6px currentColor;background:currentColor"></div>
-<script>var DEVBUILD=8;(function(){var c=["#ff3b30","#0a84ff","#30d158","#bf5af2","#ffd60a"];document.getElementById("devLight").style.color=c[DEVBUILD%5]})();</script>
+<script>var DEVBUILD=9;(function(){var c=["#ff3b30","#0a84ff","#30d158","#bf5af2","#ffd60a"];document.getElementById("devLight").style.color=c[DEVBUILD%5]})();</script>
 <!-- /DEV BUILD LIGHT -->
 </body>
 </html>
