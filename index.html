@@ -228,6 +228,9 @@ main{padding-top:0}
 #bar{position:sticky;top:0;z-index:6;margin:0 -16px 10px;padding:4px 16px 8px}
 .toprow{display:flex;align-items:stretch;gap:12px;margin-left:-16px}
 body.stuck #bar{background:var(--bg);box-shadow:0 1px 0 var(--line)}
+#bar{top:env(safe-area-inset-top,0px)}
+#bar::before{content:"";position:absolute;left:0;right:0;bottom:100%;height:env(safe-area-inset-top,0px);background:var(--bg);pointer-events:none;display:none}
+body.stuck #bar::before{display:block}
 body.adding #bar,body.listing #bar{position:static}
 .top .ttl{min-width:0}
 .top .sub{margin:2px 0 0}
@@ -1846,7 +1849,7 @@ var lastDay=ymd();function dayCheck(){if(ymd()!==lastDay){lastDay=ymd();render()
 </script>
 <!-- DEV BUILD LIGHT (temporary, remove later): colour changes with every deploy -->
 <div id="devLight" aria-hidden="true" style="position:fixed;top:calc(env(safe-area-inset-top,0px) + 42px);right:23px;width:8px;height:8px;border-radius:50%;z-index:9999;pointer-events:none;box-shadow:0 0 6px currentColor;background:currentColor"></div>
-<script>var DEVBUILD=5;(function(){var c=["#ff3b30","#0a84ff","#30d158","#bf5af2","#ffd60a"];document.getElementById("devLight").style.color=c[DEVBUILD%5]})();</script>
+<script>var DEVBUILD=6;(function(){var c=["#ff3b30","#0a84ff","#30d158","#bf5af2","#ffd60a"];document.getElementById("devLight").style.color=c[DEVBUILD%5]})();</script>
 <!-- /DEV BUILD LIGHT -->
 </body>
 </html>
