@@ -14,7 +14,7 @@
 <meta name="theme-color" content="#2b2b2b">
 <script>document.documentElement.setAttribute("data-skin","session");try{var sk=localStorage.getItem("solargraphs-v1-theme");if(sk)document.documentElement.setAttribute("data-skin",sk)}catch(e){}</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@600;700;800&family=IBM+Plex+Mono:wght@500;600;700&family=Fraunces:wght@600;700&family=Press+Start+2P&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@300..800&family=Unbounded:wght@600;700;800&family=IBM+Plex+Mono:wght@500;600;700&family=Fraunces:wght@600;700&family=Press+Start+2P&display=swap">
 <style>
 .hlwrap{display:inline-block;margin-right:.28em;vertical-align:-.06em;line-height:0;filter:drop-shadow(0 0 2.5px var(--hglow,rgba(255,60,20,.5)))}
 html:root[data-skin=session],html:root[data-skin=sunrise],html:root[data-skin=darkroom]{--hglow:rgba(255,60,20,.5)}
@@ -208,7 +208,7 @@ html:root[data-skin=paper] .sub{letter-spacing:.03em;font-size:.85rem}
 html:root[data-skin=paper] #tabs button,html:root[data-skin=paper] .acts button{letter-spacing:.02em;font-size:.8rem}
 html:root[data-skin=paper] button.primary,html:root[data-skin=paper] .okb{letter-spacing:.02em}
 /* Session */
-html:root[data-skin=session]{--bg:#1d1d1d;--card:#2b2b2b;--ink:#e8e8e8;--mute:#9b9b9b;--line:#454545;--sun:#ffad1f;--blue:#59c7ec;--onsun:#161616;color-scheme:dark;--fh:"Helvetica Neue",Helvetica,Arial,sans-serif;--tt:none;--r:1px;--g1:transparent;--g2:transparent;--grid:rgba(255,255,255,.025);--fabsh:0 3px 10px rgba(0,0,0,.5);--scansh:0 3px 10px rgba(0,0,0,.5);--nsh:0 18px 44px rgba(0,0,0,.6);--scrim:rgba(20,20,20,.84);--tglow:0 0 0;--cardsh:0 0 0}
+html:root[data-skin=session]{--bg:#1d1d1d;--card:#2b2b2b;--ink:#e8e8e8;--mute:#9b9b9b;--line:#454545;--sun:#ffad1f;--blue:#59c7ec;--onsun:#161616;color-scheme:dark;--fh:"Outfit","Helvetica Neue",Helvetica,Arial,sans-serif;--tt:none;--r:1px;--g1:transparent;--g2:transparent;--grid:rgba(255,255,255,.025);--fabsh:0 3px 10px rgba(0,0,0,.5);--scansh:0 3px 10px rgba(0,0,0,.5);--nsh:0 18px 44px rgba(0,0,0,.6);--scrim:rgba(20,20,20,.84);--tglow:0 0 0;--cardsh:0 0 0}
 html:root[data-skin=session] article.item{--c1:hsl(var(--h) 62% 66%);--c2:hsl(var(--h) 45% 46%);--c3:hsl(var(--h) 55% 10%);border-left:0;color:var(--c3)}
 html:root[data-skin=session] article.item .meta,html:root[data-skin=session] article.item .risk{color:hsl(var(--h) 35% 17%)}
 html:root[data-skin=session] article.item .meta a{color:var(--c3);text-decoration:underline}
@@ -217,7 +217,7 @@ html:root[data-skin=session] article.item .bar{background:rgba(0,0,0,.22)}
 html:root[data-skin=session] article.item .bar i{background:var(--c3)}
 html:root[data-skin=session] article.item .bar i.hi{background:#b3261e}
 html:root[data-skin=session] h1,html:root[data-skin=session] .big{font-weight:700;letter-spacing:0}
-html:root[data-skin=session] h1{font-size:1.65rem;line-height:1.05}
+html:root[data-skin=session] h1{font-size:1.65rem;line-height:1.05;font-weight:430}
 html:root[data-skin=session] .item h2{font-weight:700;letter-spacing:0}
 html:root[data-skin=session] #tabs button,html:root[data-skin=session] .acts button{letter-spacing:.01em;font-size:.78rem}
 html:root[data-skin=session] .sub{letter-spacing:.02em;font-size:.85rem}
@@ -518,11 +518,21 @@ html:root[data-skin=sunrise] #srchBtn.on{background:#ffe066;color:#1a1040;border
 .nomatch{padding:18px 4px;color:var(--mute);line-height:1.8}
 .nomatch .lnk{margin:0 6px 0 0;padding:4px 8px;font-size:.85rem}
 #bkNote{margin:10px 0 12px}
+
+/* consistent headers: one-line title filling the same width, fixed row heights */
+.top h1{white-space:nowrap;height:36px;line-height:36px;margin:4px 0 0}
+.top h1>span:last-child{line-height:1.25}
+.sub{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;height:22px;line-height:22px;margin:0 0 14px}
+html:root[data-skin=session] .top h1{font-size:min(27.72px,calc((100vw - 68px) * 0.0861))}
+html:root[data-skin=darkroom] .top h1{font-size:min(23.12px,calc((100vw - 68px) * 0.0718))}
+html:root[data-skin=paper] .top h1{font-size:min(24.51px,calc((100vw - 68px) * 0.0761))}
+html:root[data-skin=future] .top h1{font-size:min(16.97px,calc((100vw - 68px) * 0.0527))}
+html:root[data-skin=sunrise] .top h1{font-size:min(13.82px,calc((100vw - 68px) * 0.0429))}
 </style>
 </head>
 <body>
 <main>
-<div id="bar"><button type="button" id="helpBtn" aria-label="How it works">?</button><div class="toprow"><div class="barmain"><header class="top"><div class="ttl"><h1><span class="hlwrap" aria-hidden="true"><span class="hlogo"></span></span>Solargraph tracker <span style="font-size:.5em;letter-spacing:.1em;padding:2px 8px;border:1px solid currentColor;border-radius:99px;vertical-align:middle">v3</span></h1>
+<div id="bar"><button type="button" id="helpBtn" aria-label="How it works">?</button><div class="toprow"><div class="barmain"><header class="top"><div class="ttl"><h1><span class="hlwrap" aria-hidden="true"><span class="hlogo"></span></span>Solargraph Tracker <span style="font-size:.5em;letter-spacing:.1em;padding:2px 8px;border:1px solid currentColor;border-radius:99px;vertical-align:middle">v3</span></h1>
 <p class="sub" id="sum">Tap + to add your first one.</p></div></header>
 </div></div><nav id="tabs" aria-label="Views"><button><span>Scouting</span><i>0</i></button><button class="on"><span>Live</span><i>0</i></button><button><span>Vault</span><i>0</i></button></nav><div id="srch" aria-hidden="true"><div class="srchin"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg><input id="q" type="text" inputmode="search" enterkeyhint="search" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="Search your cameras" aria-label="Search your cameras" tabindex="-1"><button type="button" id="qx" aria-label="Clear search" tabindex="-1">×</button></div></div></div>
 
