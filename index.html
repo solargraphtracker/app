@@ -1162,7 +1162,7 @@ function undoSync(){
 
 /* providers */
 function gdLib(cb){if(window.google&&google.accounts&&google.accounts.oauth2)return cb(true);var s=document.createElement("script");s.src="https://accounts.google.com/gsi/client";s.onload=function(){cb(true)};s.onerror=function(){cb(false)};document.head.appendChild(s)}
-var GWORKER="";
+var GWORKER="https://solargraph-auth.solargraphtracker.workers.dev";
 var grt="";try{grt=localStorage.getItem(KEY+"-grt")||""}catch(e){}
 function grtSave(){try{if(grt)localStorage.setItem(KEY+"-grt",grt);else localStorage.removeItem(KEY+"-grt")}catch(e){}}
 function gtokSet(j){gd.tok=j.access_token;gd.exp=Date.now()+(+j.expires_in||3600)*1000;try{localStorage.setItem(KEY+"-gtok",JSON.stringify({t:gd.tok,e:gd.exp}))}catch(e){}}
