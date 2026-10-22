@@ -1175,23 +1175,23 @@ function gwPost(path,body){
    without it, Google only gives a one-hour key and asks again. */
 function gdCode(cb){
   gdLib(function(ok){
-    if(!ok)return cb(null);
+    if(!ok){gd.why="Google sign-in script didn’t load";return cb(null)}
     var done=false,fin=function(t){if(done)return;done=true;cb(t)};
     try{
       var cc=google.accounts.oauth2.initCodeClient({client_id:GCID,scope:"https://www.googleapis.com/auth/drive.appdata",ux_mode:"popup",
         callback:function(r){
-          if(!r||!r.code)return fin(null);
+          if(!r||!r.code){gd.why="Google said: "+((r&&(r.error_description||r.error))||"no code");return fin(null)}
           gwPost("/exchange",{code:r.code}).then(function(j){
             gtokSet(j);
             if(j.refresh_token){grt=j.refresh_token;grtSave();return fin(gd.tok)}
             if(grt)return fin(gd.tok);
             /* Google skipped the long-lasting key because access was granted before: reset it so the next sign-in gets one */
             gwPost("/revoke",{token:j.access_token}).catch(function(){}).then(function(){gd.tok=null;gd.almost=true;fin(null)});
-          }).catch(function(){fin(null)});
+          }).catch(function(e){gd.why="helper: "+((e&&e.message)||"unreachable");fin(null)});
         },
-        error_callback:function(){fin(null)}});
+        error_callback:function(e){gd.why="popup: "+((e&&(e.type||e.message))||"closed");fin(null)}});
       cc.requestCode();
-    }catch(e){fin(null)}
+    }catch(e){gd.why="start: "+(e&&e.message);fin(null)}
   });
 }
 function gdToken(interactive,cb){
@@ -1199,7 +1199,7 @@ function gdToken(interactive,cb){
   if(!GCID)return cb(null);
   if(GWORKER){
     if(grt){
-      gwPost("/refresh",{refresh_token:grt}).then(function(j){gtokSet(j);cb(gd.tok)}).catch(function(e){
+      gwPost("/refresh",{refresh_token:grt}).then(function(j){gtokSet(j);cb(gd.tok)}).catch(function(e){gd.why="refresh: "+((e&&e.message)||"failed");
         if(e.code==="invalid_grant"){grt="";grtSave()}
         if(interactive&&!grt)gdCode(cb);else cb(null);
       });
@@ -1313,7 +1313,7 @@ function syncNow(manual){
   }).catch(function(e){
     sy.busy=false;
     if(e===401&&P===DBXP&&dbx.retry<1){dbx.tok=null;dbx.retry++;sySave();cbRender();syncSoon(400);return}
-    if(e==="auth"||e===401){if(P===GDP)gd.tok=null;else dbx.tok=null;sy.need=true;if(manual)toast("Couldn’t sign in to "+P.name+".")}
+    if(e==="auth"||e===401){if(P===GDP)gd.tok=null;else dbx.tok=null;sy.need=true;if(manual)toast("Couldn’t sign in to "+P.name+(P===GDP&&gd.why?" ("+gd.why+")":"")+".");gd.why=""}
     else{sy.err=true;sy.why=step+": "+(typeof e==="number"?"error "+e:(e&&e.message)||String(e));if(manual)toast("Couldn’t sync ("+sy.why+").")}
     sySave();cbRender();
     if(sy.again&&!sy.need){sy.again=false;syncSoon(5000)}
@@ -1328,7 +1328,7 @@ function provReset(){sy.seen={};sy.legacy=false;sy.dirty=true;sy.last=0;sy.need=
 function gdConnect(){
   if(dbx.rt){toast("Sign out of Dropbox first.");return}
   gdToken(true,function(t){
-    if(!t){if(gd.almost){gd.almost=false;if(!gd.on){gd.on=true;gdSave();provReset()}sy.need=true;sySave();cbRender();toast("Almost there: tap Reconnect once more to finish signing in.")}else toast("Couldn’t sign in to Google.");return}
+    if(!t){if(gd.almost){gd.almost=false;if(!gd.on){gd.on=true;gdSave();provReset()}sy.need=true;sySave();cbRender();toast("Almost there: tap Reconnect once more to finish signing in.")}else toast("Couldn’t sign in to Google"+(gd.why?" ("+gd.why+")":"")+".");gd.why="";return}
     if(!gd.on)provReset();gd.on=true;sy.need=false;gdSave();syncNow(true);
   });
 }
@@ -1846,7 +1846,7 @@ var lastDay=ymd();function dayCheck(){if(ymd()!==lastDay){lastDay=ymd();render()
 </script>
 <!-- DEV BUILD LIGHT (temporary, remove later): colour changes with every deploy -->
 <div id="devLight" aria-hidden="true" style="position:fixed;top:calc(env(safe-area-inset-top,0px) + 3px);left:50%;width:8px;height:8px;margin-left:-4px;border-radius:50%;z-index:9999;pointer-events:none;box-shadow:0 0 6px currentColor;background:currentColor"></div>
-<script>var DEVBUILD=2;(function(){var c=["#ff3b30","#0a84ff","#30d158","#bf5af2","#ffd60a"];document.getElementById("devLight").style.color=c[DEVBUILD%5]})();</script>
+<script>var DEVBUILD=3;(function(){var c=["#ff3b30","#0a84ff","#30d158","#bf5af2","#ffd60a"];document.getElementById("devLight").style.color=c[DEVBUILD%5]})();</script>
 <!-- /DEV BUILD LIGHT -->
 </body>
 </html>
