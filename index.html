@@ -1549,6 +1549,22 @@ new MutationObserver(function(){setTimeout(fitSub,30)}).observe(document.documen
 window.addEventListener("resize",fitSub);
 if(document.fonts&&document.fonts.ready)document.fonts.ready.then(fitSub);
 fitSub();
+/* auto-update: when the app is opened or brought back, check GitHub for a newer version and load it */
+var APPV=1;
+function checkUpdate(){
+  if(!/^https?:$/.test(location.protocol))return;
+  fetch(location.pathname.replace(/index\.html$/,"")+"?check="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.text():""}).then(function(t){
+    var m=/var APPV=(\d+);/.exec(t||"");if(!m||+m[1]<=APPV)return;
+    var tried="";try{tried=sessionStorage.getItem("sg-upd")||""}catch(e){}
+    var go=function(){try{sessionStorage.setItem("sg-upd",m[1])}catch(e){}location.replace(location.pathname.replace(/index\.html$/,"")+"?v="+m[1])};
+    var busy=document.body.classList.contains("adding")||document.body.classList.contains("listing")||document.body.classList.contains("scanning")||$("viewer").classList.contains("on")||$("guide").classList.contains("on");
+    if(busy||tried===m[1])toast("A new version is ready.","Update",go);else go();
+  }).catch(function(){});
+}
+try{if(/[?&]v=\d+/.test(location.search))history.replaceState(null,"",location.pathname)}catch(e){}
+setTimeout(checkUpdate,2500);
+document.addEventListener("visibilitychange",function(){if(document.visibilityState==="visible")checkUpdate()});
+setInterval(function(){if(document.visibilityState==="visible")checkUpdate()},300000);
 cbRender();
 
 function loadForm(i,putUp){
@@ -1934,7 +1950,7 @@ var lastDay=ymd();function dayCheck(){if(ymd()!==lastDay){lastDay=ymd();render()
 </script>
 <!-- DEV BUILD LIGHT (temporary, remove later): colour changes with every deploy -->
 <div id="devLight" aria-hidden="true" style="position:absolute;top:1px;right:23px;width:8px;height:8px;border-radius:50%;z-index:9999;pointer-events:none;box-shadow:0 0 6px currentColor;background:currentColor"></div>
-<script>try{document.getElementById("bar").appendChild(document.getElementById("devLight"))}catch(e){}var DEVBUILD=11;(function(){var c=["#ff3b30","#0a84ff","#30d158","#bf5af2","#ffd60a"];document.getElementById("devLight").style.color=c[DEVBUILD%5]})();</script>
+<script>try{document.getElementById("bar").appendChild(document.getElementById("devLight"))}catch(e){}var DEVBUILD=12;(function(){var c=["#ff3b30","#0a84ff","#30d158","#bf5af2","#ffd60a"];document.getElementById("devLight").style.color=c[DEVBUILD%5]})();</script>
 <!-- /DEV BUILD LIGHT -->
 </body>
 </html>
