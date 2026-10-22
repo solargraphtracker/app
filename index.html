@@ -1041,9 +1041,9 @@ var gd={tok:null,exp:0,on:false},dbx={tok:null,exp:0,rt:"",retry:0};
 try{gd.on=localStorage.getItem(KEY+"-drive")==="1";dbx.rt=localStorage.getItem(KEY+"-dbx")||"";var gt=JSON.parse(localStorage.getItem(KEY+"-gtok")||"null");if(gt&&gt.e>Date.now()+60000){gd.tok=gt.t;gd.exp=gt.e}}catch(e){}
 function gdSave(){try{localStorage.setItem(KEY+"-drive",gd.on?"1":"0")}catch(e){}}
 function dbxSave(){try{if(dbx.rt)localStorage.setItem(KEY+"-dbx",dbx.rt);else localStorage.removeItem(KEY+"-dbx")}catch(e){}}
-var sy={busy:false,again:false,need:false,err:false,last:0,seen:{},legacy:false,dirty:true,n:0,timer:null,warned:false};
-try{var so=JSON.parse(localStorage.getItem(KEY+"-sync")||"null");if(so){sy.last=+so.last||0;sy.seen=so.seen||{};sy.legacy=!!so.legacy;sy.dirty=so.dirty!==false;sy.need=!!so.need}}catch(e){}
-function sySave(){try{localStorage.setItem(KEY+"-sync",JSON.stringify({last:sy.last,seen:sy.seen,legacy:sy.legacy,dirty:sy.dirty,need:sy.need}))}catch(e){}}
+var sy={why:"",busy:false,again:false,need:false,err:false,last:0,seen:{},legacy:false,dirty:true,n:0,timer:null,warned:false};
+try{var so=JSON.parse(localStorage.getItem(KEY+"-sync")||"null");if(so){sy.last=+so.last||0;sy.seen=so.seen||{};sy.legacy=!!so.legacy;sy.dirty=so.dirty!==false;sy.need=!!so.need;sy.err=!!so.err;sy.why=so.why||""}}catch(e){}
+function sySave(){try{localStorage.setItem(KEY+"-sync",JSON.stringify({last:sy.last,seen:sy.seen,legacy:sy.legacy,dirty:sy.dirty,need:sy.need,err:sy.err,why:sy.why}))}catch(e){}}
 var DEV="";try{DEV=localStorage.getItem(KEY+"-dev")||"";if(!DEV){DEV=Date.now().toString(36)+Math.random().toString(36).slice(2,8);localStorage.setItem(KEY+"-dev",DEV)}}catch(e){DEV="t"+Math.random().toString(36).slice(2,10)}
 var MYFILE="sg-dev-"+DEV+".json";
 
@@ -1158,7 +1158,7 @@ function gdToken(interactive,cb){
     }catch(e){fin(null)}
   });
 }
-function hok(r){if(!r.ok)throw r.status;return r}
+function hok(r){if(!r.ok){if(r.status===401)throw 401;return r.text().then(function(t){var m="";try{var j=JSON.parse(t);m=(j.error&&(j.error.message||j.error_summary||j.error))||j.error_summary||""}catch(e){m=String(t||"").slice(0,80)}throw new Error(r.status+(m?" "+String(m).slice(0,90):""))})}return r}
 var GDP={name:"Google",
   tok:function(inter){return new Promise(function(res){gdToken(inter,res)})},
   list:function(t){var out=[],q=encodeURIComponent("name contains 'sg-' or name = 'solargraph-backup.json'");
@@ -1222,13 +1222,13 @@ function syncNow(manual){
   if(sy.busy){sy.again=true;return}
   if(sy.need&&!manual){cbRender();return}
   sy.busy=true;cbRender();
-  var t;
+  var t,step="sign-in";
   P.tok(!!manual).then(function(tk){
-    if(!tk){throw "auth"}t=tk;sy.need=false;
+    if(!tk){throw "auth"}t=tk;sy.need=false;step="list";
     return P.list(t);
   }).then(function(files){
     var byName={};files.forEach(function(f){byName[f.name]=f});
-    var pre=snapTake(),ch=false,chain=Promise.resolve();
+    var pre=snapTake(),ch=false,chain=Promise.resolve();step="read";
     var leg=byName["solargraph-backup.json"];
     if(!sy.legacy&&leg)chain=chain.then(function(){return P.get(t,leg,false).then(function(txt){restore(txt,true)})});
     chain=chain.then(function(){sy.legacy=true});
@@ -1237,22 +1237,22 @@ function syncNow(manual){
       chain=chain.then(function(){return P.get(t,f,false).then(function(txt){var r=null;try{r=JSON.parse(txt)}catch(e){}if(r&&r.app==="solargraphs-sync"&&mergeIn(r))ch=true;sy.seen[f.name]=f.mod})});
     });
     return chain.then(function(){
-      if(ch){snapKeep(pre);syncApply()}
-      return blobsDown(P,t,byName);
-    }).then(function(){return blobsUp(P,t,byName)}).then(function(){
+      step="merge";if(ch){snapKeep(pre);syncApply()}
+      step="photos down";return blobsDown(P,t,byName);
+    }).then(function(){step="photos up";return blobsUp(P,t,byName)}).then(function(){step="save";
       if(!sy.dirty&&!ch&&byName[MYFILE])return;
       var n=sy.n;
       return P.put(t,MYFILE,JSON.stringify(myState()),"application/json",byName[MYFILE]).then(function(){if(sy.n===n)sy.dirty=false});
     }).then(function(){if(ch)toast("Synced changes from your other devices.")});
   }).then(function(){
-    sy.busy=false;sy.err=false;sy.last=Date.now();dbx.retry=0;sySave();cbRender();
+    sy.busy=false;sy.err=false;sy.why="";sy.last=Date.now();dbx.retry=0;sySave();cbRender();
     if(manual)toast("Synced.");
     if(sy.again){sy.again=false;syncSoon(400)}
   }).catch(function(e){
     sy.busy=false;
     if(e===401&&P===DBXP&&dbx.retry<1){dbx.tok=null;dbx.retry++;sySave();cbRender();syncSoon(400);return}
     if(e==="auth"||e===401){if(P===GDP)gd.tok=null;else dbx.tok=null;sy.need=true;if(manual)toast("Couldn’t sign in to "+P.name+".")}
-    else{sy.err=true;if(manual)toast("Couldn’t sync right now. It will try again.")}
+    else{sy.err=true;sy.why=step+": "+(typeof e==="number"?"error "+e:(e&&e.message)||String(e));if(manual)toast("Couldn’t sync ("+sy.why+").")}
     sySave();cbRender();
     if(sy.again&&!sy.need){sy.again=false;syncSoon(5000)}
   });
@@ -1309,7 +1309,7 @@ function cbRender(){
     n.textContent="Sync your cameras and photos across your devices, saved in your own cloud account.";
     a.innerHTML=(GCID?b("gdOn","Continue with Google","cbb",G):"")+(DBXKEY?b("dbxOn","Continue with Dropbox","cbb",D):"");
   }else{
-    var s=sy.busy?"Syncing…":sy.need?"Signed out. Tap Reconnect to keep syncing.":sy.err?"Couldn’t sync last time. It will try again.":sy.last?"Synced "+new Date(sy.last).toLocaleString([],{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"})+".":"Not synced yet.";
+    var s=sy.busy?"Syncing…":sy.need?"Signed out. Tap Reconnect to keep syncing.":sy.err?"Couldn’t sync last time ("+(sy.why||"unknown")+"). It will try again.":sy.last?"Synced "+new Date(sy.last).toLocaleString([],{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"})+".":"Not synced yet.";
     n.textContent="Signed in with "+P.name+". "+s;
     var on=P===GDP?"gd":"dbx";
     a.innerHTML='<div class="acts">'+(sy.need?b(on+"On","Reconnect","primary"):b("syNow","Sync now","ab"))+b(on+"Off","Sign out","ab")+'</div>'+(snapList().length?'<button type="button" id="syUndo" class="lnk syundo">Undo last sync</button>':'');
