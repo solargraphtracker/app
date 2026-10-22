@@ -654,7 +654,54 @@ function bigFile(f){if(f&&f.size>MAXB){toast("That file is "+Math.round(f.size/1
 function bigPx(im){var m=im.width*im.height;if(m>MAXMP){toast("That image is "+Math.round(m/1e6)+" megapixels. The limit is 60.");return true}return false}
 function toast(t,label,fn){var e=$("toast");e.textContent=t;if(label){var b=document.createElement("button");b.type="button";b.textContent=label;b.onclick=function(){e.className="";fn()};e.appendChild(b)}e.className="on";clearTimeout(toast.t);toast.t=setTimeout(function(){e.className=""},label?9000:5000)}
 function load(){try{items=JSON.parse(localStorage.getItem(KEY)||"[]")}catch(e){items=[]}try{pstore=JSON.parse(localStorage.getItem(KEY+"-photos")||"{}")||{}}catch(e){pstore={}}}
-function psave(){try{localStorage.setItem(KEY+"-photos",JSON.stringify(pstore));return true}catch(e){return false}}
+/* Photo storage: photos live in IndexedDB (roomy), cameras and settings stay in localStorage.
+   Old photos in localStorage are copied over, verified, and only then removed. */
+var PS={db:null,on:false,ready:false,stored:{},err:false,q:Promise.resolve()};
+function psig(v){return v?v.length+":"+String(v).slice(-24):""}
+function idbOpen(){return new Promise(function(res,rej){var r;try{r=indexedDB.open("solargraphs-photos",1)}catch(e){return rej(e)}r.onupgradeneeded=function(){r.result.createObjectStore("b")};r.onsuccess=function(){res(r.result)};r.onerror=function(){rej(r.error)};r.onblocked=function(){rej(new Error("blocked"))}})}
+function idbAll(db){return new Promise(function(res,rej){var out={};try{var tx=db.transaction("b","readonly"),c=tx.objectStore("b").openCursor();c.onsuccess=function(){var cur=c.result;if(cur){out[cur.key]=cur.value;cur.continue()}};tx.oncomplete=function(){res(out)};tx.onerror=function(){rej(tx.error)}}catch(e){rej(e)}})}
+function idbWrite(db,puts,dels){return new Promise(function(res,rej){try{var tx=db.transaction("b","readwrite"),st=tx.objectStore("b");Object.keys(puts).forEach(function(k){st.put(puts[k],k)});dels.forEach(function(k){st.delete(k)});tx.oncomplete=function(){res()};tx.onerror=function(){rej(tx.error)};tx.onabort=function(){rej(tx.error||new Error("aborted"))}}catch(e){rej(e)}})}
+function isData(v){return !!v&&String(v).indexOf("data:")===0}
+function pwanted(){var w={};Object.keys(pstore).forEach(function(id){if(isData(pstore[id]))w["p:"+id]=pstore[id]});gal.forEach(function(g){if(isData(g.thumb))w["gt:"+g.id]=g.thumb;if(isData(g.full))w["gf:"+g.id]=g.full});return w}
+function pflush(){
+  if(!PS.on||!PS.ready)return;
+  var w=pwanted(),puts={},dels=[],prev={},n=0;
+  Object.keys(w).forEach(function(k){if(PS.stored[k]!==psig(w[k])){puts[k]=w[k];n++}});
+  Object.keys(PS.stored).forEach(function(k){if(!(k in w))dels.push(k)});
+  if(!n&&!dels.length)return;
+  Object.keys(puts).forEach(function(k){prev[k]=PS.stored[k];PS.stored[k]=psig(puts[k])});
+  dels.forEach(function(k){prev[k]=PS.stored[k];delete PS.stored[k]});
+  PS.q=PS.q.then(function(){return idbWrite(PS.db,puts,dels)}).then(function(){PS.err=false},function(){
+    Object.keys(prev).forEach(function(k){if(prev[k]===undefined)delete PS.stored[k];else PS.stored[k]=prev[k]});
+    if(!PS.err){PS.err=true;toast("Couldn’t save a photo on this device. Storage may be full.")}
+  });
+}
+function gstrip(g){if(!PS.on)return g;var o={};Object.keys(g).forEach(function(k){if((k==="thumb"||k==="full")&&isData(g[k]))return;o[k]=g[k]});return o}
+function gWrite(){try{localStorage.setItem(GKEY,JSON.stringify(gal.map(gstrip)));pflush();return true}catch(e){return false}}
+function photosInit(done){
+  if(!window.indexedDB){done();return}
+  var db;
+  idbOpen().then(function(d){db=d;return idbAll(db)}).then(function(all){
+    Object.keys(all).forEach(function(k){
+      if(k.indexOf("p:")===0){var id=k.slice(2);if(!pstore[id])pstore[id]=all[k]}
+    });
+    gal.forEach(function(g){if(!g.thumb&&all["gt:"+g.id])g.thumb=all["gt:"+g.id];if(!g.full&&all["gf:"+g.id])g.full=all["gf:"+g.id]});
+    var stored={};Object.keys(all).forEach(function(k){stored[k]=psig(all[k])});
+    var w=pwanted(),puts={};Object.keys(w).forEach(function(k){if(stored[k]!==psig(w[k]))puts[k]=w[k]});
+    if(!Object.keys(puts).length)return stored;
+    return idbWrite(db,puts,[]).then(function(){return idbAll(db)}).then(function(all2){
+      if(!Object.keys(puts).every(function(k){return all2[k]===puts[k]}))throw new Error("verify");
+      Object.keys(all2).forEach(function(k){stored[k]=psig(all2[k])});return stored;
+    });
+  }).then(function(stored){
+    PS.db=db;PS.stored=stored;PS.on=true;PS.ready=true;
+    try{localStorage.removeItem(KEY+"-photos")}catch(e){}
+    try{localStorage.setItem(GKEY,JSON.stringify(gal.map(gstrip)))}catch(e){}
+    split();pflush();
+    try{if(navigator.storage&&navigator.storage.persist)navigator.storage.persist().catch(function(){})}catch(e){}
+  }).catch(function(){PS.on=false;PS.ready=false}).then(function(){done()});
+}
+function psave(){if(PS.on){pflush();return true}try{localStorage.setItem(KEY+"-photos",JSON.stringify(pstore));return true}catch(e){return false}}
 function photoOf(i){return i.photo||pstore[i.id]||""}
 var forcePrune=false;
 function split(){
@@ -670,7 +717,7 @@ function split(){
 }
 function lsChars(){var n=0;try{for(var k in localStorage){if(Object.prototype.hasOwnProperty.call(localStorage,k))n+=k.length+(localStorage.getItem(k)||"").length}}catch(e){}return n}
 var LSMAX=5000000;
-function roomFor(chars){return !!assets||lsChars()+chars<LSMAX*0.95}
+function roomFor(chars){return !!assets||PS.on||lsChars()+chars<LSMAX*0.95}
 function persist(){split();stamp();markPend();cloudSync();syncSoon();
   try{localStorage.setItem(KEY,JSON.stringify(items));return true}
   catch(e){if(col){toast("This phone’s storage is full, so this change is only saved to your account. See Settings > Storage.");return true}toast("Couldn’t save. Browser storage may be full or blocked. Try a smaller photo.");return false}
@@ -1144,7 +1191,7 @@ function syncApply(){
   var ids={};items.forEach(function(i){ids[i.id]=1;known[i.id]=iSig(i)});Object.keys(known).forEach(function(id){if(!ids[id])delete known[id]});
   var gids={};gal.forEach(function(g){gids[g.id]=1;gknown[g.id]=gSig(g)});Object.keys(gknown).forEach(function(id){if(!gids[id])delete gknown[id]});
   try{localStorage.setItem(KEY,JSON.stringify(items))}catch(e){}
-  try{localStorage.setItem(GKEY,JSON.stringify(gal))}catch(e){}
+  gWrite();
   try{localStorage.setItem(KEY+"-opts",JSON.stringify(opts));localStorage.setItem(KEY+"-sort",JSON.stringify(sortSel))}catch(e){}
   deadSave();try{snapSigs();gSnap()}catch(e){}
   try{fillPicks();fillSort()}catch(e){}
@@ -1271,7 +1318,7 @@ function blobsDown(P,t,byName){
     if(full)return;
     return P.get(t,byName[phName(j[2])],true).then(blobUrl).then(function(d){
       if(j[0]==="i"){var it=items.find(function(x){return x.id===j[1]});if(!it||it.ph!==j[2])return;var old=pstore[it.id];pstore[it.id]=d;if(!psave()){if(old)pstore[it.id]=old;else delete pstore[it.id];full=true;return}known[it.id]=iSig(it);got++}
-      else{var g=gal.find(function(x){return x.id===j[1]});if(!g)return;var k=j[0]==="t"?"thumb":"full";if((k==="thumb"?g.th:g.fu)!==j[2])return;var o=g[k];g[k]=d;try{localStorage.setItem(GKEY,JSON.stringify(gal))}catch(e){g[k]=o;full=true;return}gknown[g.id]=gSig(g);got++}
+      else{var g=gal.find(function(x){return x.id===j[1]});if(!g)return;var k=j[0]==="t"?"thumb":"full";if((k==="thumb"?g.th:g.fu)!==j[2])return;var o=g[k];g[k]=d;if(!gWrite()){g[k]=o;full=true;return}gknown[g.id]=gSig(g);got++}
     }).catch(function(e){if(e===401)throw e});
   })});
   return chain.then(function(){if(got){render();renderGallery()}if(full&&!sy.warned){sy.warned=true;toast("This device is out of storage, so some photos stayed in the cloud.")}});
@@ -1288,6 +1335,7 @@ function blobsUp(P,t,byName){
 /* one sync round: read other devices, merge, fetch/upload photos, write our own file */
 function syncNow(manual){
   var P=prov();if(!P)return;
+  if(!known){setTimeout(function(){syncNow(manual)},250);return}
   if(sy.busy){sy.again=true;return}
   if(sy.need&&!manual){cbRender();return}
   sy.busy=true;cbRender();
@@ -1626,7 +1674,7 @@ function gsavePend(){try{localStorage.setItem(KEY+"-gpend",JSON.stringify(gpend)
 function gSnap(){gLast={};gal.forEach(function(g){gLast[g.id]=gsig(g)})}
 function gMark(){var ch=false,ids={};gal.forEach(function(g){ids[g.id]=1;var s=gsig(g);if(gLast[g.id]!==s){gpend.up[g.id]=s;delete gpend.del[g.id];ch=true}gLast[g.id]=s});Object.keys(gLast).forEach(function(id){if(!ids[id]){delete gLast[id];delete gpend.up[id];gpend.del[id]=1;ch=true}});if(ch)gsavePend()}
 function gload(){try{gal=JSON.parse(localStorage.getItem(GKEY)||"[]");if(!Array.isArray(gal))gal=[]}catch(e){gal=[]}}
-function gsave(){gstamp();gMark();syncSoon();try{localStorage.setItem(GKEY,JSON.stringify(gal));return true}catch(e){toast("Couldn’t save the gallery on this device. Browser storage may be full.");return false}}
+function gsave(){gstamp();gMark();syncSoon();try{if(!gWrite())throw 0;return true}catch(e){toast("Couldn’t save the gallery on this device. Browser storage may be full.");return false}}
 function gsig(g){return JSON.stringify(g,Object.keys(g).sort())}
 function gdoc(g){var d={};Object.keys(g).forEach(function(k){if(k==="id"||g[k]===undefined)return;if(k==="full"&&/^data:/.test(g[k]||""))return;d[k]=g[k]});return d}
 function gpush(g){
@@ -1776,13 +1824,13 @@ vs.addEventListener("wheel",function(e){e.preventDefault();vz.s=Math.max(1,Math.
 document.addEventListener("keydown",function(e){if(!$("viewer").classList.contains("on"))return;if(e.key==="Escape")closeViewer();else if(e.key==="ArrowRight")vGo(1);else if(e.key==="ArrowLeft")vGo(-1)});
 function fmtB(c){return c>=1e6?(c/1e6).toFixed(1)+" MB":Math.max(1,Math.round(c/1e3))+" KB"}
 function renderStorage(){
-  var u=lsChars(),pct=Math.min(100,u/LSMAX*100),f=$("stFill");f.style.width=Math.max(2,pct)+"%";f.className=pct>80?"hi":"";
+  var u=lsChars(),pct=PS.on?2:Math.min(100,u/LSMAX*100),f=$("stFill");f.style.width=Math.max(2,pct)+"%";f.className=pct>80?"hi":"";
   var np=items.filter(function(i){return photoOf(i)}).length;
-  var h='<div>Saved on this device: <b>'+fmtB(u)+'</b> of about 5 MB'+(pct>80?' <b style="color:var(--sun)">(nearly full)</b>':'')+'</div>'
+  var h=(PS.on?'<div id="stUse">Photos are kept in this device’s photo storage, which has plenty of room.</div>':'<div>Saved on this device: <b>'+fmtB(u)+'</b> of about 5 MB'+(pct>80?' <b style="color:var(--sun)">(nearly full)</b>':'')+'</div>')
    +'<div>'+items.length+(items.length===1?' camera':' cameras')+', '+np+' with a main photo, '+gal.length+' gallery '+(gal.length===1?'photo':'photos')+'</div>'
-   +'<div style="margin-top:4px">'+(assets?'Full-size photos are saved to your account, so they don’t use this space. Only cameras and small previews do.':'Photos are being kept on this device, so space can run out. Files over 50 MB or 60 megapixels are refused.')+'</div>';
+   +'<div style="margin-top:4px">'+(assets?'Full-size photos are saved to your account, so they don’t use this space. Only cameras and small previews do.':(PS.on?'Files over 50 MB or 60 megapixels are refused.':'Photos are being kept on this device, so space can run out. Files over 50 MB or 60 megapixels are refused.'))+'</div>';
   $("stTxt").innerHTML=h;
-  try{if(navigator.storage&&navigator.storage.estimate)navigator.storage.estimate().then(function(e){if(e&&e.quota&&$("stTxt")){$("stTxt").insertAdjacentHTML("beforeend",'<div style="margin-top:4px">Browser storage overall: '+fmtB(e.usage||0)+' used of about '+fmtB(e.quota)+'</div>')}}).catch(function(){})}catch(e){}
+  try{if(navigator.storage&&navigator.storage.estimate)navigator.storage.estimate().then(function(e){if(e&&e.quota&&PS.on&&$("stFill")){var q=Math.min(100,(e.usage||0)/e.quota*100);$("stFill").style.width=Math.max(2,q)+"%";$("stFill").className=q>80?"hi":""}if(e&&e.quota&&$("stTxt")){$("stTxt").insertAdjacentHTML("beforeend",'<div style="margin-top:4px">Browser storage overall: '+fmtB(e.usage||0)+' used of about '+fmtB(e.quota)+'</div>')}}).catch(function(){})}catch(e){}
 }
 var SKINS=[{id:"session",name:"Session",sw:["#1d1d1d","#ffad1f","#59c7ec"]},{id:"darkroom",name:"Darkroom",sw:["#0b0403","#ff4a28","#ffb54d"]},{id:"paper",name:"Paper",sw:["#efe8d8","#cc4a14","#1b4f8f"]},{id:"future",name:"Future",sw:["#07080c","#ff5a1f","#3df0ff"]},{id:"sunrise",name:"Retro",sw:["#2a1a5c","#ff7a5c","#ffe066"]}],skinRef=null;
 function curSkin(){return document.documentElement.getAttribute("data-skin")||"session"}
@@ -1848,14 +1896,15 @@ try{if(!localStorage.getItem(KEY+"-guide")&&!localStorage.getItem(KEY))setTimeou
 function setHints(on,msg){document.body.classList.toggle("showhints",on);var b=$("formHelp");b.classList.toggle("on",on);b.setAttribute("aria-pressed",on?"true":"false");try{localStorage.setItem(KEY+"-hints",on?"1":"0")}catch(e){}if(msg)toast(on?"Descriptions shown.":"Descriptions hidden.")}
 try{setHints(localStorage.getItem(KEY+"-hints")==="1",false)}catch(e){}
 $("formHelp").addEventListener("click",function(){setHints(!document.body.classList.contains("showhints"),true)});
-load();if(split()){try{localStorage.setItem(KEY,JSON.stringify(items))}catch(e){}}snapSigs();gload();gSnap();syncInit();reset();render();renderGallery();setPane(1,false);initCloud();
+load();if(split()){try{localStorage.setItem(KEY,JSON.stringify(items))}catch(e){}}snapSigs();gload();gSnap();reset();render();renderGallery();setPane(1,false);initCloud();
+photosInit(function(){syncInit();render();renderGallery()});
 window.addEventListener("resize",function(){requestAnimationFrame(fitBig)});try{document.fonts.ready.then(fitBig)}catch(e){}
 var lastDay=ymd();function dayCheck(){if(ymd()!==lastDay){lastDay=ymd();render()}}setInterval(dayCheck,60000);document.addEventListener("visibilitychange",function(){if(!document.hidden)dayCheck()});
 })();
 </script>
 <!-- DEV BUILD LIGHT (temporary, remove later): colour changes with every deploy -->
 <div id="devLight" aria-hidden="true" style="position:fixed;top:calc(env(safe-area-inset-top,0px) + 42px);right:23px;width:8px;height:8px;border-radius:50%;z-index:9999;pointer-events:none;box-shadow:0 0 6px currentColor;background:currentColor"></div>
-<script>var DEVBUILD=7;(function(){var c=["#ff3b30","#0a84ff","#30d158","#bf5af2","#ffd60a"];document.getElementById("devLight").style.color=c[DEVBUILD%5]})();</script>
+<script>var DEVBUILD=8;(function(){var c=["#ff3b30","#0a84ff","#30d158","#bf5af2","#ffd60a"];document.getElementById("devLight").style.color=c[DEVBUILD%5]})();</script>
 <!-- /DEV BUILD LIGHT -->
 </body>
 </html>
