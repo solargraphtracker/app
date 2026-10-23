@@ -436,10 +436,10 @@ body.viewing{overflow:hidden}
 .tgl i{position:absolute;left:2px;top:2px;width:18px;height:18px;border-radius:50%;background:var(--mute)}
 #toast{z-index:50}
 
-#scanDrop{aspect-ratio:auto;height:max(170px,calc(100vh - 420px));height:max(170px,calc(100dvh - 420px));margin-top:8px}
+#scanDrop{aspect-ratio:auto;height:max(140px,calc(100vh - 520px - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px)));height:max(140px,calc(100dvh - 520px - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px)));margin-top:8px}
 #scanChange{margin:6px 0 0}
 #cropWrap{width:fit-content;max-width:100%;margin:6px auto 0}
-#scanCv{width:auto;max-width:100%;max-height:calc(100vh - 430px);max-height:calc(100dvh - 430px);min-height:120px;margin:0 auto}
+#scanCv{width:auto;max-width:100%;max-height:calc(100vh - 530px - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px));max-height:calc(100dvh - 530px - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px));min-height:110px;margin:0 auto}
 .trow{display:flex;gap:8px;margin-top:10px}
 #scRot{flex:0 0 46px!important;display:grid;place-items:center}
 .trow button{flex:1;margin:0;padding:10px 6px;font-size:.85rem}
@@ -515,8 +515,8 @@ article.item .lpDel{position:absolute!important;left:auto!important;bottom:auto!
 .lpDel{position:absolute;right:12px;top:50%;z-index:4;transform:translateY(-50%);border:0;border-radius:10px;background:#e5484d;color:#fff;font:700 .95rem/1 system-ui,-apple-system,sans-serif;letter-spacing:.02em;text-transform:none;padding:12px 18px;box-shadow:0 4px 16px rgba(0,0,0,.45);animation:lpIn .18s ease-out}
 @keyframes lpIn{from{opacity:0;transform:translateY(-50%) scale(.8)}to{opacity:1;transform:translateY(-50%) scale(1)}}
 article.item .big{white-space:nowrap}
-#scan.forcard #scanCv{max-height:calc(100vh - 475px);max-height:calc(100dvh - 475px)}
-#scan.forcard #scanDrop{height:max(150px,calc(100vh - 465px));height:max(150px,calc(100dvh - 465px))}
+#scan.forcard #scanCv{max-height:calc(100vh - 575px - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px));max-height:calc(100dvh - 575px - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px))}
+#scan.forcard #scanDrop{height:max(130px,calc(100vh - 565px - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px)));height:max(130px,calc(100dvh - 565px - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px)))}
 .w3wOpen{display:inline-block;margin-top:6px;padding:4px 0;font-size:.85rem;color:var(--blue);text-decoration:underline}
 .srt{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:6px 10px}
 .srt label{margin:0;font:600 .9rem system-ui,sans-serif;text-transform:none;letter-spacing:0;color:var(--ink);flex:0 0 auto}
@@ -1653,7 +1653,14 @@ function openScan(id){
   $("scanFor").textContent=it?"For: "+it.name:"";$("scan").classList.toggle("forcard",!!it);$("scanUse").style.display=it?"block":"none";
   $("scan").classList.add("on");document.body.classList.add("scanning");scanTop();$("scan").scrollTop=0;document.body.style.overflow="hidden";syncNav();
 }
-function scanTop(){var b=$("bar");if(b)$("scan").style.top=Math.max(0,Math.round(b.getBoundingClientRect().bottom))+"px"}
+function fitScan(){
+  var sc=$("scan");if(!sc.classList.contains("on"))return;
+  var d=$("scanDrop"),c=$("scanCv");d.style.height="";c.style.maxHeight="";c.style.minHeight="";
+  var over=sc.scrollHeight-sc.clientHeight;if(over<=0)return;
+  if(d.offsetParent!==null)d.style.height=Math.max(110,d.offsetHeight-over-2)+"px";
+  else if(c.offsetParent!==null){c.style.minHeight="60px";c.style.maxHeight=Math.max(60,c.offsetHeight-over-2)+"px"}
+}
+function scanTop(){var b=$("bar");if(b)$("scan").style.top=Math.max(0,Math.round(b.getBoundingClientRect().bottom))+"px";fitScan()}
 window.addEventListener("resize",function(){if($("scan").classList.contains("on"))scanTop()});
 function closeScan(){$("scan").style.top="";$("scan").classList.remove("on");document.body.classList.remove("scanning");document.body.style.overflow="";syncNav()}
 function freezeScan(on){
@@ -1671,6 +1678,7 @@ function drawScan(){
   for(var k=0;k<p.length;k+=4){p[k]=lut[p[k]];p[k+1]=lut[p[k+1]];p[k+2]=lut[p[k+2]]}
   x.putImageData(d,0,0);
   $("scExpVal").textContent=(e>0?"+":"")+e.toFixed(1);
+  if(sc.fitFor!==s){sc.fitFor=s;setTimeout(fitScan,0)}
 }
 function queueScan(){if(sc.raf)return;sc.raf=requestAnimationFrame(function(){sc.raf=0;drawScan()})}
 $("scanFile").addEventListener("change",function(e){
@@ -1924,7 +1932,7 @@ var GMAIN=[
 var GTAB={
  scan:[["Quick scan","Quick scan","Scan your paper negative with your camera to invert and flip it, for a quick peek at how it came out.",null]],
  gallery:[["Gallery","Gallery","A home for your finished, edited solargraphs. Add photos with the + button, link them to a camera.","#gfab"]],
- account:[["Backup","Backup","Your cameras are saved on this device. Sign in with Google or Dropbox to keep them safe and in sync on all your devices.|You can also save a backup file now and then, or copy a small text backup into Notes.",null]]
+ account:[["Backup","Backup","Your cameras are saved on this device. Sign in with Google or Dropbox to keep them safe and in sync on all your devices.|You can also save a backup file locally.",null]]
 };
 var GSTEPS=GMAIN,gi=0;
 function openGuide(set,solo){GSTEPS=set;guideSolo=!!solo;showGuide(0)}
@@ -1993,7 +2001,7 @@ var lastDay=ymd();function dayCheck(){if(ymd()!==lastDay){lastDay=ymd();render()
 </script>
 <!-- DEV BUILD LIGHT (temporary, remove later): colour changes with every deploy -->
 <div id="devLight" aria-hidden="true" style="position:absolute;top:1px;right:23px;width:8px;height:8px;border-radius:50%;z-index:9999;pointer-events:none;box-shadow:0 0 6px currentColor;background:currentColor"></div>
-<script>try{document.getElementById("bar").appendChild(document.getElementById("devLight"))}catch(e){}var DEVBUILD=16;(function(){var c=["#ff3b30","#0a84ff","#30d158","#bf5af2","#ffd60a"];document.getElementById("devLight").style.color=c[DEVBUILD%5]})();</script>
+<script>try{document.getElementById("bar").appendChild(document.getElementById("devLight"))}catch(e){}var DEVBUILD=17;(function(){var c=["#ff3b30","#0a84ff","#30d158","#bf5af2","#ffd60a"];document.getElementById("devLight").style.color=c[DEVBUILD%5]})();</script>
 <!-- /DEV BUILD LIGHT -->
 </body>
 </html>
