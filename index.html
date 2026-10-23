@@ -1516,7 +1516,7 @@ function cbRender(){
     t.setAttribute("aria-checked",on?"true":"false");v.value=Math.round(vol*100);
     vb.setAttribute("aria-pressed",on?"false":"true");vb.setAttribute("aria-label",on?"Mute music":"Play music");viz();
     var k=cur||want();
-    n.firstChild.textContent=!on?"Music is off.":failed?"Couldn’t load the music.":switching?"Up next: "+TRACKS[k][1]:playing?"Now playing: "+TRACKS[k][1]:"Starts when you tap the app.";
+    n.firstChild.textContent=!on?"Music is off.":failed?"Couldn’t load the music.":switching?"Up next: "+TRACKS[k][1]:playing?"Now playing: "+TRACKS[k][1]:"";n.style.display=n.firstChild.textContent?"":"none";
   }
   function save(){try{localStorage.setItem(KEY+"-music",on?"1":"0");localStorage.setItem(KEY+"-vol",String(vol))}catch(e){}}
   function toggle(){on=!on;save();if(on)start();else stop();ui()}
@@ -1963,7 +1963,7 @@ var lastDay=ymd();function dayCheck(){if(ymd()!==lastDay){lastDay=ymd();render()
 </script>
 <!-- DEV BUILD LIGHT (temporary, remove later): colour changes with every deploy -->
 <div id="devLight" aria-hidden="true" style="position:absolute;top:1px;right:23px;width:8px;height:8px;border-radius:50%;z-index:9999;pointer-events:none;box-shadow:0 0 6px currentColor;background:currentColor"></div>
-<script>try{document.getElementById("bar").appendChild(document.getElementById("devLight"))}catch(e){}var DEVBUILD=14;(function(){var c=["#ff3b30","#0a84ff","#30d158","#bf5af2","#ffd60a"];document.getElementById("devLight").style.color=c[DEVBUILD%5]})();</script>
+<script>try{document.getElementById("bar").appendChild(document.getElementById("devLight"))}catch(e){}var DEVBUILD=15;(function(){var c=["#ff3b30","#0a84ff","#30d158","#bf5af2","#ffd60a"];document.getElementById("devLight").style.color=c[DEVBUILD%5]})();</script>
 <!-- /DEV BUILD LIGHT -->
 </body>
 </html>
