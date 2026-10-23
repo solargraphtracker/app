@@ -579,13 +579,13 @@ html:root[data-skin=sunrise] .top h1{font-size:min(11.58px,calc((100vw - 98px) *
 <div class="hint desc wh"><div>Tap a wheel to unlock it, then scroll to pick.</div><div><b>Pinhole:</b> size in mm, in 0.05 steps up to 1.00.</div><div><b>Facing:</b> the direction the camera points.</div><div><b>Tilt:</b> 0° is level, + points up at the sky, − down at the ground.</div></div>
 <div class="row" id="dates">
 <div><label for="start">Put up</label><input id="start" type="date"></div>
-<div><label for="end">Taken down (optional)</label><input id="end" type="date"></div>
+<div><label for="end">Collected (optional)</label><input id="end" type="date"></div>
 </div>
 <label for="w3w">what3words address</label>
 <input id="w3w" placeholder="filled.count.soap" autocapitalize="none" spellcheck="false">
 <a class="w3wOpen" href="https://what3words.com" target="_blank" rel="noopener">Open what3words</a>
 <div class="hint desc" id="w3wHint">Three words separated by dots. You don’t need the ///.</div>
-<div class="hint desc">what3words gives every 3 m × 3 m square on Earth its own three-word address. In the what3words app, tap your spot and copy the three words.</div>
+<div class="hint desc">what3words gives every 3 m × 3 m square on Earth its own three-word address. In the what3words app, select your spot and copy the three words.</div>
 <label for="risk">Theft risk: <b id="riskVal">5</b>/10</label>
 <input id="risk" type="range" min="1" max="10" step="1" value="5">
 <div class="hint desc">1 is hidden and out of the way. 10 is busy and easy to grab.</div>
@@ -637,7 +637,7 @@ html:root[data-skin=sunrise] .top h1{font-size:min(11.58px,calc((100vw - 98px) *
 <div id="lsRows"></div>
 <p class="hint">Renaming changes it on every camera entry that uses it. Deleting only takes it out of the list; camera entries keep their value.</p>
 </div></div>
-<div id="nudge" role="dialog" aria-label="Scan suggestion"><div class="nbox"><div class="nk">Taken down</div><div class="nt" id="nTitle"></div><p>Scan the paper now to see how your solargraph came out.</p><button type="button" class="primary" id="nGo">Quick scan</button><button type="button" class="ghost" id="nNo">Not now</button></div></div>
+<div id="nudge" role="dialog" aria-label="Scan suggestion"><div class="nbox"><div class="nk">Collected</div><div class="nt" id="nTitle"></div><p>Scan the paper now to see how your solargraph came out.</p><button type="button" class="primary" id="nGo">Quick scan</button><button type="button" class="ghost" id="nNo">Not now</button></div></div>
 <div id="guide" role="dialog" aria-label="How it works"><div id="gHole"></div><div class="gbox"><div class="gk" id="gK"></div><h2 id="gT"></h2><p id="gP"></p><div class="gdots" id="gD"></div><div class="grow"><button type="button" class="ghost" id="gSkip">Skip</button><button type="button" class="primary" id="gNext">Next</button></div></div></div>
 <div id="toast" role="status"></div>
 
@@ -818,7 +818,7 @@ function lazyArcs(){
 var SORTOPTS=[
  [["added","Newest added"],["addedold","Oldest added"],["edited","Recently edited"],["title","Title A–Z"],["area","Area A–Z"],["risk","Highest theft risk"]],
  [["new","Newest first"],["old","Oldest first (longest up)"],["edited","Recently edited"],["title","Title A–Z"],["area","Area A–Z"],["risk","Highest theft risk"]],
- [["new","Newest first"],["down","Recently taken down"],["old","Oldest first"],["long","Longest exposure"],["short","Shortest exposure"],["edited","Recently edited"],["title","Title A–Z"],["area","Area A–Z"],["risk","Highest theft risk"]]
+ [["new","Newest first"],["down","Recently collected"],["old","Oldest first"],["long","Longest exposure"],["short","Shortest exposure"],["edited","Recently edited"],["title","Title A–Z"],["area","Area A–Z"],["risk","Highest theft risk"]]
 ],SORTDEF=["added","new","new"],sortSel=SORTDEF.slice(),sortRef=null;
 try{var ss=JSON.parse(localStorage.getItem(KEY+"-sort")||"null");if(ss&&ss.length===3)sortSel=ss.map(function(v,n){return SORTOPTS[n].some(function(o){return o[0]===v})?v:SORTDEF[n]})}catch(e){}
 function idNum(i){return /^\d+$/.test(String(i.id))?+i.id:0}
@@ -854,7 +854,7 @@ function closeSearch(){if(!document.body.classList.contains("searching")&&!sq)re
 function render(){
   var list=$("list");ensureHue();
   var up=items.filter(function(i){return i.start&&!i.end}).length,ideas=items.filter(function(i){return !i.start}).length,stolen=items.filter(function(i){return i.stolen}).length;
-  $("sum").innerHTML=items.length?("<b>"+up+"</b> up, "+(items.length-up-ideas-stolen)+" taken down"+(stolen?", "+stolen+" stolen":"")+(ideas?", "+ideas+" scouted":"")):"Tap + to add your first one.";
+  $("sum").innerHTML=items.length?("<b>"+up+"</b> up, "+(items.length-up-ideas-stolen)+" collected"+(stolen?", "+stolen+" stolen":"")+(ideas?", "+ideas+" scouted":"")):"Tap + to add your first one.";
   
   var sorted=items.slice();
   var card=function(i){
@@ -866,13 +866,13 @@ function render(){
     var loc=i.w3w?'<a href="https://what3words.com/'+encodeURIComponent(i.w3w).replace(/%2E/g,".")+'" target="_blank" rel="noopener">///'+esc(i.w3w)+'</a>':'';
     return '<article class="item'+(openIds[i.id]?' open':'')+'" tabindex="0" aria-expanded="'+(openIds[i.id]?'true':'false')+'" data-id="'+i.id+'" style="--h:'+(i.hue||0)+'">'+(items.length>100?'<i class="lazyarc" data-aid="'+esc(String(i.id))+'"></i>':arcsSvg(i))+img+'<div><h2>'+esc(i.name)+'</h2>'+(i.area?'<div class="area">'+esc(i.area)+'</div>':'')+
       '<div class="big'+(i.stolen?' st':'')+'">'+(i.stolen?'Stolen <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><mask id="gm"><rect width="24" height="24" fill="#fff"/><path d="M8 9l3 3M11 9l-3 3M13 9l3 3M16 9l-3 3" fill="none" stroke="#000" stroke-width="1.5" stroke-linecap="round"/></mask><path mask="url(#gm)" fill="currentColor" d="M4.5 21.5V10.5a7.5 7.5 0 0 1 15 0v11l-2.5-2.2-2.5 2.2-2.5-2.2-2.5 2.2-2.5-2.2z"/></svg>':dur+(!s?' <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 15l2-6h4l1 3h4l1-3h4l2 6"/><circle cx="6.5" cy="16" r="3.5"/><circle cx="17.5" cy="16" r="3.5"/></svg>':''))+'<span class="chev" aria-hidden="true"></span></div>'+'<div class="more">'+(spec?'<div class="meta">'+esc(spec)+'</div>':'')+(aim?'<div class="meta">'+esc(aim)+'</div>':'')+
-      (s?'<div class="meta">'+(s.months>0?s.days+' days total, '+(i.stolen?'stolen':i.end?'taken down':'still up'):(i.stolen?'Stolen':i.end?'Taken down':'Still up'))+'</div>':'<div class="meta">Not put up yet</div>')+
+      (s?'<div class="meta">'+(s.months>0?s.days+' days total, '+(i.stolen?'stolen':i.end?'collected':'still up'):(i.stolen?'Stolen':i.end?'Collected':'Still up'))+'</div>':'<div class="meta">Not put up yet</div>')+
       (s?'<div class="meta">Up '+fmt(i.start)+(i.end?(i.stolen?' → stolen ':' → down ')+fmt(i.end):'')+'</div>':'')+
       (loc?'<div class="meta">'+loc+'</div>':'')+
       (i.risk?'<div class="risk">Theft risk '+i.risk+'/10<span class="bar"><i class="'+(i.risk>=8?'hi':'')+'" style="width:'+(i.risk*10)+'%"></i></span></div>':'')+
       (i.notes?'<div class="meta">'+esc(i.notes)+'</div>':'')+
       '<div class="acts"><button data-e="'+i.id+'">Edit</button>'+
-      (!i.start?'<button data-u="'+i.id+'">Put up today</button>':i.stolen?'<button data-n="'+i.id+'">Undo stolen</button>':i.end?'<button data-b="'+i.id+'">Undo taken down</button>':'<button data-d="'+i.id+'">Taken down today</button><button data-s="'+i.id+'">Mark as stolen</button>')+
+      (!i.start?'<button data-u="'+i.id+'">Put up today</button>':i.stolen?'<button data-n="'+i.id+'">Undo stolen</button>':i.end?'<button data-b="'+i.id+'">Undo collected</button>':'<button data-d="'+i.id+'">Collected today</button><button data-s="'+i.id+'">Mark as stolen</button>')+
       (i.end&&!i.stolen?'<button data-q="'+i.id+'">Quick scan</button>':'')+'<button data-x="'+i.id+'">Delete</button></div></div></div></article>';
   };
   var groups=[[],[],[]];
@@ -881,7 +881,7 @@ function render(){
   var toks=norm(sq).split(/\s+/).filter(Boolean),all=groups.map(function(g){return g.length});
   if(toks.length)groups=groups.map(function(g){return g.filter(function(i){return qMatch(i,toks)})});
   groups[2]=groups[2].filter(function(i){return !i.stolen}).concat(groups[2].filter(function(i){return i.stolen}));
-  var empt=["No spots scouted yet. Tick Spot scouted when adding one.","Nothing up right now. Tap + to add a camera.","Nothing retired yet. Cameras you take down or lose end up here."];
+  var empt=["No spots scouted yet. Tick Spot scouted when adding one.","Nothing up right now. Tap + to add a camera.","Nothing retired yet. Cameras you collect or lose end up here."];
   groups.forEach(function(g,n){var last=null,byArea=sortSel[n]==="area";$("p"+n).innerHTML=g.length?g.map(function(i){var h="";if(byArea){var a=i.area||"No area";if(a!==last){h='<div class="grp">'+esc(a)+'</div>';last=a}}return h+card(i)}).join(""):(toks.length?nomatch(n,groups):'<div class="empty">'+empt[n]+'</div>');document.querySelectorAll("#tabs button i")[n].textContent=g.length});
   lazyArcs();fitBig();
 }
@@ -1683,7 +1683,7 @@ window.addEventListener("scroll",function(){document.body.classList.toggle("stuc
 $("topBtn").addEventListener("click",function(){window.scrollTo({top:0,behavior:"smooth"})});
 $("scanClose").addEventListener("click",closeScan);
 document.addEventListener("keydown",function(e){if(e.key==="Escape"&&$("scan").classList.contains("on"))closeScan()});
-function showScanOut(cv){var o=$("scanOut");o.src=cv.toDataURL("image/jpeg",0.92);o.style.display="block";try{var a=document.createElement("a");a.href=o.src;a.download="solargraph-scan.jpg";document.body.appendChild(a);a.click();a.remove()}catch(e){}toast("If it didn’t save, press and hold the picture below.")}
+function showScanOut(cv){var o=$("scanOut");o.src=cv.toDataURL("image/jpeg",0.92);o.style.display="block";try{var a=document.createElement("a");a.href=o.src;a.download="solargraph-scan.jpg";document.body.appendChild(a);a.click();a.remove()}catch(e){}toast("If it didn’t save, tap and hold the picture below.")}
 $("scanSave").addEventListener("click",function(){
   var cv=$("scanCv");
   cv.toBlob(function(b){
@@ -1897,14 +1897,14 @@ $("rp").addEventListener("click",function(){var t=$("paste").value.trim();if(t){
 
 function homeHint(){
   var ua=navigator.userAgent||"",ios=/iPad|iPhone|iPod/.test(ua)||(navigator.platform==="MacIntel"&&navigator.maxTouchPoints>1),and=/Android/i.test(ua),mac=/Macintosh/.test(ua)&&!ios;
-  var how=ios?"Tap your browser’s <b>Share</b> button, then <b>Add to Home Screen</b>.":and?"Tap your browser’s menu (<b>⋮</b>), then <b>Add to Home screen</b> or <b>Install app</b>.":mac&&/Safari/.test(ua)&&!/Chrome|Edg|Firefox/.test(ua)?"In Safari, choose <b>File &gt; Add to Dock</b>.":"In Chrome or Edge, click the <b>install</b> icon at the right of the address bar.";
+  var how=ios?"Open your browser’s <b>Share</b> menu, then choose <b>Add to Home Screen</b>.":and?"Open your browser’s menu (<b>⋮</b>), then choose <b>Add to Home screen</b> or <b>Install app</b>.":mac&&/Safari/.test(ua)&&!/Chrome|Edg|Firefox/.test(ua)?"In Safari, choose <b>File &gt; Add to Dock</b>.":"In Chrome or Edge, click the <b>install</b> icon at the right of the address bar.";
   return how+" It opens like a normal app, full screen.|Your cameras are saved on this device, so sign in on the <b>Backup</b> tab to keep them safe and synced.";
 }
 var GSTEPS=[
 ["Welcome","What is a solargraph?","A solargraph is a DIY pinhole camera containing photographic paper. When left outside for weeks or months, the bright trails of the sun\u2019s arcs are \u201cburned\u201d into the paper. The result is a staggering long exposure image with a giant arc curved over the skyscape.|This app is designed to help you keep track of your cameras while they\u2019re out in the wild, waiting to be picked up again when they\u2019re done.|For a full guide, check out <a href=\"https://www.lomography.de/school/what-is-solargraphy-fa-2evjnoe3\" target=\"_blank\" rel=\"noopener\">Lomography: What is solargraphy</a>.",null],
 ["1 of 8","Cameras","This is where all your solargraphs live: spots you\u2019re scouting, cameras that are out right now, and your finished ones.","#nav [data-s=cameras]"],
-["2 of 8","Scouting","Spots you\u2019ve found but haven\u2019t placed a camera at yet.|When you\u2019ve rigged up a camera at your spot, click <b>Put up today</b> to move it over to the Live tab.","#tabs button:nth-child(1)"],
-["3 of 8","Live","Cameras that are out there right now, with how long they\u2019ve been exposing.|When you\u2019ve collected a camera, click <b>Taken down today</b> to move it over to the Vault. If it goes missing, tap <b>Mark as stolen</b>.","#tabs button:nth-child(2)"],
+["2 of 8","Scouting","Spots you\u2019ve found but haven\u2019t placed a camera at yet.|When you\u2019ve rigged up a camera at your spot, tap <b>Put up today</b> to move it over to the Live tab.","#tabs button:nth-child(1)"],
+["3 of 8","Live","Cameras that are out there right now, with how long they\u2019ve been exposing.|When you\u2019ve collected a camera, tap <b>Collected today</b> to move it over to the Vault. If it goes missing, tap <b>Mark as stolen</b>.","#tabs button:nth-child(2)"],
 ["4 of 8","Vault","Finished solargraphs, plus the ones that you lost along the way.","#tabs button:nth-child(3)"],
 ["5 of 8","Add","Tap + to add a new spot or camera.","#fab"],
 ["6 of 8","Quick scan","Scan your paper negative with your camera to invert and flip it, for a quick peek at how it came out.","#navScan"],
@@ -1963,7 +1963,7 @@ var lastDay=ymd();function dayCheck(){if(ymd()!==lastDay){lastDay=ymd();render()
 </script>
 <!-- DEV BUILD LIGHT (temporary, remove later): colour changes with every deploy -->
 <div id="devLight" aria-hidden="true" style="position:absolute;top:1px;right:23px;width:8px;height:8px;border-radius:50%;z-index:9999;pointer-events:none;box-shadow:0 0 6px currentColor;background:currentColor"></div>
-<script>try{document.getElementById("bar").appendChild(document.getElementById("devLight"))}catch(e){}var DEVBUILD=13;(function(){var c=["#ff3b30","#0a84ff","#30d158","#bf5af2","#ffd60a"];document.getElementById("devLight").style.color=c[DEVBUILD%5]})();</script>
+<script>try{document.getElementById("bar").appendChild(document.getElementById("devLight"))}catch(e){}var DEVBUILD=14;(function(){var c=["#ff3b30","#0a84ff","#30d158","#bf5af2","#ffd60a"];document.getElementById("devLight").style.color=c[DEVBUILD%5]})();</script>
 <!-- /DEV BUILD LIGHT -->
 </body>
 </html>
