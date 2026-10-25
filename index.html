@@ -427,6 +427,12 @@ body.viewing{overflow:hidden}
 .hlink:first-of-type{border-top:0}
 .hlink span{color:var(--mute);font-weight:400}
 .hlink span a{color:var(--blue)}
+
+/* closed cards: same height every time; long titles shrink a little, then get "…" after two lines; area stays on one line */
+.item:not(.open) h2{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;overflow-wrap:anywhere}
+.item:not(.open) .area{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.item:not(.open){min-height:var(--closedH,0px)}
+.item:not(.open)>div:last-child{align-self:center;min-width:0}
 #musT,#hintsT{cursor:pointer}
 #hintsT[aria-checked=true] .tgl{background:var(--sun)}
 #hintsT[aria-checked=true] .tgl i{left:20px;background:var(--onsun)}
@@ -571,9 +577,9 @@ html:root[data-skin=sunrise] .top h1{font-size:min(11.58px,calc((100vw - 98px) *
 <div class="ftrow"><h2 class="formtitle" id="ft">New solargraph</h2><button type="button" id="formHelp" aria-pressed="false" aria-label="Show or hide descriptions">?</button></div>
 <label><input type="checkbox" id="idea">Spot scouted</label>
 <label for="name">Title</label>
-<input id="name" required placeholder="Garden fence, north side">
+<input id="name" required maxlength="40" placeholder="Garden fence, north side">
 <label for="area">Area</label>
-<input id="area" placeholder="Canary Wharf">
+<input id="area" maxlength="30" placeholder="Canary Wharf">
 <label for="type">Type</label>
 <select id="type"></select>
 <div class="addrow" id="typeAdd" style="display:none"><input id="typeNew" placeholder="What kind? e.g. Altoids tin"><button type="button" class="okb" id="typeOk">Add</button></div>
@@ -1587,6 +1593,36 @@ setInterval(function(){if(document.visibilityState==="visible")checkUpdate()},30
   if(and){a.href=AND;return}if(ios)return;
   a.outerHTML='<div class="hlink">Sun position and path app<span><a href="'+IOS+'" target="_blank" rel="noopener noreferrer">iPhone</a> · <a href="'+AND+'" target="_blank" rel="noopener noreferrer">Android</a></span></div>';
 })();
+
+/* fit closed cards: shrink the title (to 82%) before cutting it at two lines; shrink the area (to 85%) before "…" */
+var fitCardsT=0,TMIN=.82,AMIN=.85;
+function fitCards(){
+  cancelAnimationFrame(fitCardsT);fitCardsT=requestAnimationFrame(function(){
+    var L=$("list");if(!L)return;
+    var cards=L.querySelectorAll(".item");if(!cards.length)return;
+    var sk=document.documentElement.getAttribute("data-skin");TMIN=sk==="future"?.66:.8;AMIN=.76;
+    cards.forEach(function(c){
+      var h=c.querySelector("h2"),a=c.querySelector(".area");
+      if(h){h.style.fontSize="";if(!c.classList.contains("open")){
+        h.style.display="block";h.style.webkitLineClamp="unset";
+        var lines=function(){var lh=parseFloat(getComputedStyle(h).lineHeight)||parseFloat(getComputedStyle(h).fontSize)*1.15;return Math.round(h.scrollHeight/lh)};
+        var f=parseFloat(getComputedStyle(h).fontSize),f0=f;while(lines()>2&&f>f0*TMIN){f*=.96;h.style.fontSize=f+"px"}
+        h.style.display="";h.style.webkitLineClamp=""}}
+      if(a){a.style.fontSize="";if(!c.classList.contains("open")){var g=parseFloat(getComputedStyle(a).fontSize),g0=g;while(a.scrollWidth>a.clientWidth+1&&g>g0*AMIN){g*=.96;a.style.fontSize=g+"px"}}}
+    });
+    /* reference height: a closed card with a two-line title and an area */
+    var src=[].find.call(cards,function(c){return !c.classList.contains("open")});if(!src)return;
+    var pr=src.cloneNode(true);pr.classList.remove("open");pr.style.cssText+="position:absolute;visibility:hidden;left:0;right:0;min-height:0;pointer-events:none";
+    var ph=pr.querySelector("h2");if(ph){ph.style.fontSize="";ph.textContent="Mmmm Mmmm Mmmm Mmmm Mmmm Mmmm Mmmm Mmmm Mmmm Mmmm"}
+    var pa=pr.querySelector(".area");if(!pa&&ph){pa=document.createElement("div");pa.className="area";ph.parentNode.insertBefore(pa,ph.nextSibling)}if(pa){pa.style.fontSize="";pa.textContent="Mmmm"}
+    src.parentNode.appendChild(pr);var hh=pr.getBoundingClientRect().height;pr.remove();
+    if(hh>0)L.style.setProperty("--closedH",Math.ceil(hh)+"px");
+  });
+}
+new MutationObserver(fitCards).observe($("list"),{childList:true,subtree:true,attributes:true,attributeFilter:["class"]});
+new MutationObserver(function(){setTimeout(fitCards,40)}).observe(document.documentElement,{attributes:true,attributeFilter:["data-skin"]});
+window.addEventListener("resize",fitCards);if(document.fonts&&document.fonts.ready)document.fonts.ready.then(fitCards);
+fitCards();
 cbRender();
 
 function loadForm(i,putUp){
@@ -2011,7 +2047,7 @@ var lastDay=ymd();function dayCheck(){if(ymd()!==lastDay){lastDay=ymd();render()
 </script>
 <!-- DEV BUILD LIGHT (temporary, remove later): colour changes with every deploy -->
 <div id="devLight" aria-hidden="true" style="position:absolute;top:1px;right:23px;width:8px;height:8px;border-radius:50%;z-index:9999;pointer-events:none;box-shadow:0 0 6px currentColor;background:currentColor"></div>
-<script>try{document.getElementById("bar").appendChild(document.getElementById("devLight"))}catch(e){}var DEVBUILD=19;(function(){var c=["#ff3b30","#0a84ff","#30d158","#bf5af2","#ffd60a"];document.getElementById("devLight").style.color=c[DEVBUILD%5]})();</script>
+<script>try{document.getElementById("bar").appendChild(document.getElementById("devLight"))}catch(e){}var DEVBUILD=20;(function(){var c=["#ff3b30","#0a84ff","#30d158","#bf5af2","#ffd60a"];document.getElementById("devLight").style.color=c[DEVBUILD%5]})();</script>
 <!-- /DEV BUILD LIGHT -->
 </body>
 </html>
