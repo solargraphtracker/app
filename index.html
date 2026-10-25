@@ -436,6 +436,16 @@ body.viewing{overflow:hidden}
 .gt span{max-width:calc(100% - 32px);white-space:normal;display:flex;flex-direction:column;align-items:flex-end;gap:1px}
 .gt span b,.gt span i{max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:600}
 .gt span i{font-style:normal;font-weight:400;opacity:.8;font-size:.92em}
+
+/* long text: wrap or trim everywhere */
+#vSheet,#vSheet *{overflow-wrap:anywhere}
+#lpList .lpn{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;overflow-wrap:anywhere}
+#lpList button small{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#lpList button{min-width:0}
+#nTitle{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+@media (max-width:359px){#dates{grid-template-columns:1fr}}
+#dates>div{min-width:0}#dates input{min-width:0;max-width:100%}
+main{padding-bottom:calc(var(--navh,60px) + 92px + env(safe-area-inset-bottom,0px))}
 #musT,#hintsT{cursor:pointer}
 #hintsT[aria-checked=true] .tgl{background:var(--sun)}
 #hintsT[aria-checked=true] .tgl i{left:20px;background:var(--onsun)}
@@ -585,12 +595,12 @@ html:root[data-skin=sunrise] .top h1{font-size:min(11.58px,calc((100vw - 98px) *
 <input id="area" maxlength="30" placeholder="Canary Wharf">
 <label for="type">Type</label>
 <select id="type"></select>
-<div class="addrow" id="typeAdd" style="display:none"><input id="typeNew" placeholder="What kind? e.g. Altoids tin"><button type="button" class="okb" id="typeOk">Add</button></div>
+<div class="addrow" id="typeAdd" style="display:none"><input id="typeNew" maxlength="30" placeholder="What kind? e.g. Altoids tin"><button type="button" class="okb" id="typeOk">Add</button></div>
 <button type="button" class="lnk" id="typeEdit">Edit list</button>
 <div class="hint desc">What the camera is made from.</div>
 <label for="paper">Paper</label>
 <select id="paper"></select>
-<div class="addrow" id="paperAdd" style="display:none"><input id="paperNew" placeholder="e.g. Ilford Multigrade RC"><button type="button" class="okb" id="paperOk">Add</button></div>
+<div class="addrow" id="paperAdd" style="display:none"><input id="paperNew" maxlength="30" placeholder="e.g. Ilford Multigrade RC"><button type="button" class="okb" id="paperOk">Add</button></div>
 <button type="button" class="lnk" id="paperEdit">Edit list</button>
 <div class="hint desc">The photographic paper inside.</div>
 <div class="wheels">
@@ -655,7 +665,7 @@ html:root[data-skin=sunrise] .top h1{font-size:min(11.58px,calc((100vw - 98px) *
 <div id="lists" role="dialog" aria-label="Edit list"><div class="scanin">
 <div class="scanhead"><h2 class="formtitle" id="lsTitle">Edit list</h2><button type="button" id="lsClose">Done</button></div>
 <p class="meta" id="lsBuilt"></p>
-<form class="addrow" id="lsForm" autocomplete="off"><input id="lsNew" placeholder="Add an option" enterkeyhint="done"><button type="submit" class="okb" id="lsAdd">Add</button></form>
+<form class="addrow" id="lsForm" autocomplete="off"><input id="lsNew" maxlength="30" placeholder="Add an option" enterkeyhint="done"><button type="submit" class="okb" id="lsAdd">Add</button></form>
 <div id="lsRows"></div>
 <p class="hint">Renaming changes it on every camera entry that uses it. Deleting only takes it out of the list; camera entries keep their value.</p>
 </div></div>
@@ -977,7 +987,7 @@ $("f").addEventListener("submit",function(e){
 });
 
 $("list").addEventListener("click",function(e){
-  var t=e.target,id;var cd=t.closest?t.closest("article.item"):null;if(cd&&!t.closest("button,a")){var cid=cd.getAttribute("data-id");openIds[cid]=!openIds[cid];cd.classList.toggle("open",!!openIds[cid]);cd.setAttribute("aria-expanded",openIds[cid]?"true":"false");return}
+  var t=e.target,id;var cd=t.closest?t.closest("article.item"):null;if(cd&&!t.closest("button,a")){var cid=cd.getAttribute("data-id");openIds[cid]=!openIds[cid];cd.classList.toggle("open",!!openIds[cid]);cd.setAttribute("aria-expanded",openIds[cid]?"true":"false");if(openIds[cid])setTimeout(function(){var r=cd.getBoundingClientRect(),nv=$("nav"),lim=(nv?nv.getBoundingClientRect().top:innerHeight)-84;if(r.bottom>lim)window.scrollBy({top:Math.min(r.bottom-lim,r.top-90),behavior:"smooth"})},60);return}
   if(t.getAttribute("data-go")!==null&&t.getAttribute("data-go")!==""&&t.classList.contains("lnk")){setPane(+t.getAttribute("data-go"),true);return}
   if(id=t.getAttribute("data-x")){if(t.getAttribute("data-c")){var gone=items.find(function(i){return i.id===id});items=items.filter(function(i){return i.id!==id});forcePrune=true;persist();render();if(gone)dropAsset(gone.photo);toast("Deleted.")}else{t.setAttribute("data-c","1");t.textContent="Tap again to delete";setTimeout(function(){if(t.isConnected){t.removeAttribute("data-c");t.textContent="Delete"}},4000)}}
   else if(id=t.getAttribute("data-d")){items.forEach(function(i){if(i.id===id){i.end=ymd();i.edited=Date.now()}});persist();render();showNudge(id)}
@@ -1647,7 +1657,7 @@ var lsK="type",lsSel="",lsY=0;
 function usedBy(k,v){var l=v.toLowerCase();return items.filter(function(i){return String(i[k]||"").toLowerCase()===l}).length}
 function renderLists(){var k=lsK,h="";
   opts[k].slice().sort(function(a,b){return a.localeCompare(b)}).forEach(function(v){var n=usedBy(k,v);
-    h+='<div class="lsrow" data-v="'+esc(v)+'"><input value="'+esc(v)+'" aria-label="Name"><div class="meta">'+(n?"Used by "+n+(n===1?" camera entry":" camera entries"):"Not used yet")+'</div><div class="acts"><button type="button" data-r="1">Save name</button><button type="button" data-del="1">Delete</button></div></div>'});
+    h+='<div class="lsrow" data-v="'+esc(v)+'"><input value="'+esc(v)+'" maxlength="30" aria-label="Name"><div class="meta">'+(n?"Used by "+n+(n===1?" camera entry":" camera entries"):"Not used yet")+'</div><div class="acts"><button type="button" data-r="1">Save name</button><button type="button" data-del="1">Delete</button></div></div>'});
   $("lsRows").innerHTML=h||'<div class="empty">Nothing added yet. Add one above.</div>'}
 function openLists(k){lsK=k;lsSel=getPick(k);$("lsTitle").textContent=k==="type"?"Edit types":"Edit papers";$("lsBuilt").textContent=BASE[k].length?"Built in: "+BASE[k].join(", ")+" (these stay).":"";$("lsNew").value="";renderLists();lsY=window.scrollY;$("lists").classList.add("on");document.body.classList.add("listing");window.scrollTo(0,0)}
 function closeLists(){$("lists").classList.remove("on");document.body.classList.remove("listing");refill(lsK);setPick(lsK,lsSel);window.scrollTo(0,lsY)}
@@ -1691,7 +1701,8 @@ $("cropOk").addEventListener("click",function(){
   var sx=$("scFlip").checked?w-dx-dw:dx,c=document.createElement("canvas");c.width=dw;c.height=dh;c.getContext("2d").drawImage(s,sx,dy,dw,dh,0,0,dw,dh);
   if(!sc.full)sc.full=s;sc.src=c;endCrop();$("cropReset").style.display="";drawScan();$("scanOut").style.display="none"});
 $("cropReset").addEventListener("click",function(){if(sc.full){sc.src=sc.full;sc.full=null}$("cropReset").style.display="none";drawScan();$("scanOut").style.display="none"});
-function showNudge(id){var it=items.find(function(x){return x.id===id});$("nTitle").textContent=it?it.name:"";$("nudge").dataset.id=id;$("nudge").classList.add("on")}
+function showNudge(id){var it=items.find(function(x){return x.id===id});var t=$("nTitle");t.textContent=it?it.name:"";t.style.fontSize="";$("nudge").dataset.id=id;$("nudge").classList.add("on");
+  t.style.display="block";t.style.webkitLineClamp="unset";var lh=function(){return parseFloat(getComputedStyle(t).lineHeight)||parseFloat(getComputedStyle(t).fontSize)*1.1},f=parseFloat(getComputedStyle(t).fontSize),f0=f;while(Math.round(t.scrollHeight/lh())>2&&f>f0*.7){f*=.95;t.style.fontSize=f+"px"}t.style.display="";t.style.webkitLineClamp=""}
 $("nGo").addEventListener("click",function(){var id=$("nudge").dataset.id;$("nudge").classList.remove("on");openScan(id)});
 $("nNo").addEventListener("click",function(){$("nudge").classList.remove("on")});
 $("nudge").addEventListener("click",function(e){if(e.target===this)this.classList.remove("on")});
@@ -1821,7 +1832,7 @@ function pickLink(title,cur,cb){
   var L=items.slice().sort(function(a,b){return (a.start||"9")<(b.start||"9")?1:-1});
   $("lpTitle").textContent=title;
   var lpDraw=function(){var t=norm($("lpQ").value).split(/\s+/).filter(Boolean),M=t.length?L.filter(function(i){return qMatch(i,t)}):L;
-    $("lpList").innerHTML=!L.length?'<p class="meta">No solargraphs yet.</p>':!M.length?'<p class="lpnone">No cameras match.</p>':M.map(function(i){return '<button type="button" data-l="'+esc(String(i.id))+'"'+(cur===i.id?' class="cur"':'')+'>'+esc(i.name)+(i.area?'<small>'+esc(i.area)+'</small>':'')+'</button>'}).join("")};
+    $("lpList").innerHTML=!L.length?'<p class="meta">No solargraphs yet.</p>':!M.length?'<p class="lpnone">No cameras match.</p>':M.map(function(i){return '<button type="button" data-l="'+esc(String(i.id))+'"'+(cur===i.id?' class="cur"':'')+'><span class="lpn">'+esc(i.name)+'</span>'+(i.area?'<small>'+esc(i.area)+'</small>':'')+'</button>'}).join("")};
   $("lpQ").value="";$("lpQ").style.display=L.length>3?"":"none";$("lpQ").oninput=lpDraw;$("lpQ").onfocus=function(){$("linkPick").classList.add("typing")};$("lpQ").onblur=function(){setTimeout(function(){if(document.activeElement!==$("lpQ"))$("linkPick").classList.remove("typing")},150)};$("linkPick").classList.remove("typing");lpDraw();
   $("lpNone").textContent=cur?"Remove link":"Don’t link to a camera";
   var done=function(v){$("linkPick").classList.remove("on");pickLink.cb=null;cb(v)};
@@ -2050,7 +2061,7 @@ var lastDay=ymd();function dayCheck(){if(ymd()!==lastDay){lastDay=ymd();render()
 </script>
 <!-- DEV BUILD LIGHT (temporary, remove later): colour changes with every deploy -->
 <div id="devLight" aria-hidden="true" style="position:absolute;top:1px;right:23px;width:8px;height:8px;border-radius:50%;z-index:9999;pointer-events:none;box-shadow:0 0 6px currentColor;background:currentColor"></div>
-<script>try{document.getElementById("bar").appendChild(document.getElementById("devLight"))}catch(e){}var DEVBUILD=22;(function(){var c=["#ff3b30","#0a84ff","#30d158","#bf5af2","#ffd60a"];document.getElementById("devLight").style.color=c[DEVBUILD%5]})();</script>
+<script>try{document.getElementById("bar").appendChild(document.getElementById("devLight"))}catch(e){}var DEVBUILD=23;(function(){var c=["#ff3b30","#0a84ff","#30d158","#bf5af2","#ffd60a"];document.getElementById("devLight").style.color=c[DEVBUILD%5]})();</script>
 <!-- /DEV BUILD LIGHT -->
 </body>
 </html>
