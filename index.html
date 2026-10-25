@@ -433,6 +433,9 @@ body.viewing{overflow:hidden}
 .item:not(.open) .area{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .item:not(.open){min-height:var(--closedH,0px)}
 .item:not(.open)>div:last-child{align-self:center;min-width:0}
+.gt span{max-width:65%;white-space:normal;display:flex;flex-direction:column;align-items:flex-end;gap:1px}
+.gt span b,.gt span i{max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:600}
+.gt span i{font-style:normal;font-weight:400;opacity:.8;font-size:.92em}
 #musT,#hintsT{cursor:pointer}
 #hintsT[aria-checked=true] .tgl{background:var(--sun)}
 #hintsT[aria-checked=true] .tgl i{left:20px;background:var(--onsun)}
@@ -1801,7 +1804,7 @@ function renderGallery(){
   var el=$("galList");if(!el)return;
   if(!gal.length){el.innerHTML='<p class="gempty">No photos yet. Tap + to add a scan, or save one from Quick scan.</p>';return}
   var sorted=gal.slice().sort(gSorter);
-  el.innerHTML=sorted.map(function(g){var it=gtitle(g);return '<button type="button" class="gt" data-g="'+esc(g.id)+'"><img src="'+(g.thumb||"data:image/gif;base64,R0lGODlhAQABAAAAACw=")+'" alt="">'+(it?'<span>'+esc(it.name)+(it.area?' <i>'+esc(it.area)+'</i>':'')+'</span>':'')+'</button>'}).join("");
+  el.innerHTML=sorted.map(function(g){var it=gtitle(g);return '<button type="button" class="gt" data-g="'+esc(g.id)+'"><img src="'+(g.thumb||"data:image/gif;base64,R0lGODlhAQABAAAAACw=")+'" alt="">'+(it?'<span><b>'+esc(it.name)+'</b>'+(it.area?'<i>'+esc(it.area)+'</i>':'')+'</span>':'')+'</button>'}).join("");
 }
 var gOffline=false,OFFMSG=" No signal right now, so it’s kept on this phone and will upload next time you open the app.";
 function gStore(cv,link,done){
@@ -2047,7 +2050,7 @@ var lastDay=ymd();function dayCheck(){if(ymd()!==lastDay){lastDay=ymd();render()
 </script>
 <!-- DEV BUILD LIGHT (temporary, remove later): colour changes with every deploy -->
 <div id="devLight" aria-hidden="true" style="position:absolute;top:1px;right:23px;width:8px;height:8px;border-radius:50%;z-index:9999;pointer-events:none;box-shadow:0 0 6px currentColor;background:currentColor"></div>
-<script>try{document.getElementById("bar").appendChild(document.getElementById("devLight"))}catch(e){}var DEVBUILD=20;(function(){var c=["#ff3b30","#0a84ff","#30d158","#bf5af2","#ffd60a"];document.getElementById("devLight").style.color=c[DEVBUILD%5]})();</script>
+<script>try{document.getElementById("bar").appendChild(document.getElementById("devLight"))}catch(e){}var DEVBUILD=21;(function(){var c=["#ff3b30","#0a84ff","#30d158","#bf5af2","#ffd60a"];document.getElementById("devLight").style.color=c[DEVBUILD%5]})();</script>
 <!-- /DEV BUILD LIGHT -->
 </body>
 </html>
