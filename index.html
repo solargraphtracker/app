@@ -973,7 +973,8 @@ $("f").addEventListener("submit",function(e){
   var w=w3wFrom($("w3w").value);
   if(w&&!validW3w(w)){$("w3wHint").textContent="That doesn’t look like three words. Use the form word.word.word.";$("w3wHint").className="hint err";$("w3w").focus();return}
   var idea=$("idea").checked;var end=idea?"":$("end").value;if(!idea&&!$("start").value){toast("Pick the date it went up, or tick Spot scouted.");return}
-  if(end&&end<$("start").value){toast("The take-down date is before the date it went up.");return}
+  if(end&&end<$("start").value){toast("The collected date is before the put-up date.");return}
+  if(($("start").value&&$("start").value>ymd())||(end&&end>ymd())){toast("Dates can’t be in the future.");return}
   var rec={id:editId||String(Date.now()),name:$("name").value.trim(),area:$("area").value.trim(),start:idea?"":$("start").value,end:end,w3w:w,notes:$("notes").value.trim(),risk:+$("risk").value,type:getPick("type"),paper:getPick("paper"),dir:W.dir.n?DIRS[W.dir.n]:"",tilt:W.tilt.touched?TV[W.tilt.n]:undefined,pin:W.pin.n?+(W.pin.n*0.05).toFixed(2):0,photo:photoData,edited:Date.now()};
   ["type","paper"].forEach(function(k){var v=rec[k];if(v&&$(k).value==="__new"&&v.toLowerCase()!==String(orig[k]||"").toLowerCase()&&addOpt(k,v))saveOpts()});
   if(editId){
@@ -2056,12 +2057,14 @@ function adoptPhotos(){
   chain.then(function(){if(got){persist();render()}});
 }
 window.addEventListener("resize",function(){requestAnimationFrame(fitBig)});try{document.fonts.ready.then(fitBig)}catch(e){}
-var lastDay=ymd();function dayCheck(){if(ymd()!==lastDay){lastDay=ymd();render()}}setInterval(dayCheck,60000);document.addEventListener("visibilitychange",function(){if(!document.hidden)dayCheck()});
+function dateMax(){var t=ymd();["start","end"].forEach(function(id){var e=$(id);if(e)e.max=t})}
+dateMax();["start","end"].forEach(function(id){var e=$(id);if(e){e.addEventListener("focus",dateMax);e.addEventListener("click",dateMax)}});
+var lastDay=ymd();function dayCheck(){if(ymd()!==lastDay){lastDay=ymd();dateMax();render()}}setInterval(dayCheck,60000);document.addEventListener("visibilitychange",function(){if(!document.hidden)dayCheck()});
 })();
 </script>
 <!-- DEV BUILD LIGHT (temporary, remove later): colour changes with every deploy -->
 <div id="devLight" aria-hidden="true" style="position:absolute;top:1px;right:23px;width:8px;height:8px;border-radius:50%;z-index:9999;pointer-events:none;box-shadow:0 0 6px currentColor;background:currentColor"></div>
-<script>try{document.getElementById("bar").appendChild(document.getElementById("devLight"))}catch(e){}var DEVBUILD=23;(function(){var c=["#ff3b30","#0a84ff","#30d158","#bf5af2","#ffd60a"];document.getElementById("devLight").style.color=c[DEVBUILD%5]})();</script>
+<script>try{document.getElementById("bar").appendChild(document.getElementById("devLight"))}catch(e){}var DEVBUILD=24;(function(){var c=["#ff3b30","#0a84ff","#30d158","#bf5af2","#ffd60a"];document.getElementById("devLight").style.color=c[DEVBUILD%5]})();</script>
 <!-- /DEV BUILD LIGHT -->
 </body>
 </html>
