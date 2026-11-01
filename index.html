@@ -430,6 +430,7 @@ body.viewing{overflow:hidden}
 
 /* closed cards: same height every time; long titles shrink a little, then get "…" after two lines; area stays on one line */
 .item:not(.open) h2{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;overflow-wrap:anywhere}
+html:root[data-skin=session] .item:not(.open) h2,html:root[data-skin=paper] .item:not(.open) h2{padding-bottom:.1em;margin-bottom:calc(2px - .1em)} /* room for g/y/p tails so the clamp does not cut them */
 .item:not(.open) .area{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .item:not(.open){min-height:var(--closedH,0px)}
 .item:not(.open)>div:last-child{align-self:center;min-width:0}
@@ -2064,7 +2065,7 @@ var lastDay=ymd();function dayCheck(){if(ymd()!==lastDay){lastDay=ymd();dateMax(
 </script>
 <!-- DEV BUILD LIGHT (temporary, remove later): colour changes with every deploy -->
 <div id="devLight" aria-hidden="true" style="position:absolute;top:1px;right:23px;width:8px;height:8px;border-radius:50%;z-index:9999;pointer-events:none;box-shadow:0 0 6px currentColor;background:currentColor"></div>
-<script>try{document.getElementById("bar").appendChild(document.getElementById("devLight"))}catch(e){}var DEVBUILD=24;(function(){var c=["#ff3b30","#0a84ff","#30d158","#bf5af2","#ffd60a"];document.getElementById("devLight").style.color=c[DEVBUILD%5]})();</script>
+<script>try{document.getElementById("bar").appendChild(document.getElementById("devLight"))}catch(e){}var DEVBUILD=25;(function(){var c=["#ff3b30","#0a84ff","#30d158","#bf5af2","#ffd60a"];document.getElementById("devLight").style.color=c[DEVBUILD%5]})();</script>
 <!-- /DEV BUILD LIGHT -->
 </body>
 </html>
