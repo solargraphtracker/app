@@ -1032,9 +1032,11 @@ L.addEventListener("click",function(e){if(fired&&!e.target.closest(".lpDel")){e.
 document.addEventListener("click",function(e){if(!e.target.closest(".lpDel")&&!fired)hide()});document.addEventListener("touchstart",function(e){if(!(e.target.closest&&e.target.closest(".lpDel"))){if(!L.contains(e.target))fired=0;hide()}},{passive:true});
 L.addEventListener("scroll",hide,{passive:true});window.addEventListener("scroll",function(){if(document.querySelector(".lpDel"))hide()},{passive:true});
 })();
-function setPane(n,smooth){cur=n;var L=$("list");if(typeof PANES!=="undefined"&&PANES)PANES.prep();L.scrollTo({left:n*L.clientWidth,behavior:smooth?"smooth":"auto"});syncTabs()}
+var tabGo=null,tabGoT=0;/* while a tapped tab slides into place, keep that tab lit */
+function setPane(n,smooth){cur=n;var L=$("list");tabGo=smooth?n:null;clearTimeout(tabGoT);if(smooth)tabGoT=setTimeout(function(){tabGo=null},1200);if(typeof PANES!=="undefined"&&PANES)PANES.prep();L.scrollTo({left:n*L.clientWidth,behavior:smooth?"smooth":"auto"});syncTabs()}
 document.querySelectorAll("#tabs button").forEach(function(b,n){b.addEventListener("click",function(){setPane(n,true)})});
-$("list").addEventListener("scroll",function(){if(document.body.classList.contains("adding"))return;var n=Math.round(this.scrollLeft/this.clientWidth);if(n!==cur){cur=n;syncTabs()}});
+$("list").addEventListener("touchstart",function(){tabGo=null},{passive:true});
+$("list").addEventListener("scroll",function(){if(document.body.classList.contains("adding"))return;var n=Math.round(this.scrollLeft/this.clientWidth);if(tabGo!==null){if(Math.abs(this.scrollLeft-tabGo*this.clientWidth)<2)tabGo=null;return}if(n!==cur){cur=n;syncTabs()}});
 /* PANESCROLL: the three lists share the page scroll, so each one remembers where you were.
    The page is only as tall as the list you are on; while swiping, the other lists are shifted
    so they already show their own remembered spot, and when the swipe lands the page jumps there
@@ -2091,7 +2093,7 @@ var lastDay=ymd();function dayCheck(){if(ymd()!==lastDay){lastDay=ymd();dateMax(
 </script>
 <!-- DEV BUILD LIGHT (temporary, remove later): colour changes with every deploy -->
 <div id="devLight" aria-hidden="true" style="position:absolute;top:1px;right:23px;width:8px;height:8px;border-radius:50%;z-index:9999;pointer-events:none;box-shadow:0 0 6px currentColor;background:currentColor"></div>
-<script>try{document.getElementById("bar").appendChild(document.getElementById("devLight"))}catch(e){}var DEVBUILD=29;(function(){var c=["#ff3b30","#0a84ff","#30d158","#bf5af2","#ffd60a"];document.getElementById("devLight").style.color=c[DEVBUILD%5]})();</script>
+<script>try{document.getElementById("bar").appendChild(document.getElementById("devLight"))}catch(e){}var DEVBUILD=30;(function(){var c=["#ff3b30","#0a84ff","#30d158","#bf5af2","#ffd60a"];document.getElementById("devLight").style.color=c[DEVBUILD%5]})();</script>
 <!-- /DEV BUILD LIGHT -->
 </body>
 </html>
