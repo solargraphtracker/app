@@ -395,6 +395,10 @@ body.scanning #scan,body.scanning #scan *,body.scanning #nav,body.scanning #nav 
 #lpList button.cur{border-color:var(--sun)}
 #gallery{text-align:left;padding:4px 0 110px}
 #gallery h2{padding:0 0 10px}
+.screen h2{font-family:var(--fh);text-transform:var(--tt);font-weight:600;text-align:left;margin:0 0 12px}
+#gallery h2{padding:10px 0 0} /* screen titles follow the theme like the card titles */
+html:root[data-skin=sunrise] .screen h2{font-size:.8rem;line-height:1.5;font-weight:400;text-shadow:2px 2px 0 #1a1040}
+html:root[data-skin=future] .screen h2{font-size:1rem}
 #galList{margin:0 -16px;display:flex;flex-direction:column;gap:2px}
 .gt{position:relative;display:block;width:100%;height:84px;padding:0;border:0;border-radius:0;background:var(--card);overflow:hidden}
 .gt img{width:100%;height:100%;object-fit:cover;display:block}
@@ -2087,7 +2091,7 @@ var lastDay=ymd();function dayCheck(){if(ymd()!==lastDay){lastDay=ymd();dateMax(
 </script>
 <!-- DEV BUILD LIGHT (temporary, remove later): colour changes with every deploy -->
 <div id="devLight" aria-hidden="true" style="position:absolute;top:1px;right:23px;width:8px;height:8px;border-radius:50%;z-index:9999;pointer-events:none;box-shadow:0 0 6px currentColor;background:currentColor"></div>
-<script>try{document.getElementById("bar").appendChild(document.getElementById("devLight"))}catch(e){}var DEVBUILD=28;(function(){var c=["#ff3b30","#0a84ff","#30d158","#bf5af2","#ffd60a"];document.getElementById("devLight").style.color=c[DEVBUILD%5]})();</script>
+<script>try{document.getElementById("bar").appendChild(document.getElementById("devLight"))}catch(e){}var DEVBUILD=29;(function(){var c=["#ff3b30","#0a84ff","#30d158","#bf5af2","#ffd60a"];document.getElementById("devLight").style.color=c[DEVBUILD%5]})();</script>
 <!-- /DEV BUILD LIGHT -->
 </body>
 </html>
