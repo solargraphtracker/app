@@ -1974,7 +1974,10 @@ function vInfoHtml(g){
 }
 function vShow(){
   var g=vl[vi];if(!g)return;
-  vSrc(vIm(0),vl[vi-1]);vSrc(vIm(1),g);vSrc(vIm(2),vl[vi+1]);
+  var c=vIm(1),me=vi;vSrc(c,g);
+  /* neighbours only once the photo you are looking at is on screen */
+  var nb=function(){if(vi!==me||!$("viewer").classList.contains("on"))return;vSrc(vIm(0),vl[vi-1]);vSrc(vIm(2),vl[vi+1])};
+  if(c.complete&&c.naturalWidth)nb();else{c.addEventListener("load",nb,{once:true});c.addEventListener("error",function(){setTimeout(nb,300)},{once:true})}
   vReset();vPlace();vTrack(0);$("vCount").textContent=(vi+1)+" / "+vl.length;vCap();
   if($("vSheet").classList.contains("on"))vFill();
 }
@@ -2145,7 +2148,7 @@ var lastDay=ymd();function dayCheck(){if(ymd()!==lastDay){lastDay=ymd();dateMax(
 </script>
 <!-- DEV BUILD LIGHT (temporary, remove later): colour changes with every deploy -->
 <div id="devLight" aria-hidden="true" style="position:absolute;top:1px;right:23px;width:8px;height:8px;border-radius:50%;z-index:9999;pointer-events:none;box-shadow:0 0 6px currentColor;background:currentColor"></div>
-<script>try{document.getElementById("bar").appendChild(document.getElementById("devLight"))}catch(e){}var DEVBUILD=31;(function(){var c=["#ff3b30","#0a84ff","#30d158","#bf5af2","#ffd60a"];document.getElementById("devLight").style.color=c[DEVBUILD%5]})();</script>
+<script>try{document.getElementById("bar").appendChild(document.getElementById("devLight"))}catch(e){}var DEVBUILD=32;(function(){var c=["#ff3b30","#0a84ff","#30d158","#bf5af2","#ffd60a"];document.getElementById("devLight").style.color=c[DEVBUILD%5]})();</script>
 <!-- /DEV BUILD LIGHT -->
 </body>
 </html>
