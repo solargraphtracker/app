@@ -105,6 +105,7 @@ button.primary{font-size:.85rem;letter-spacing:.06em}
 #fab{box-shadow:0 0 24px rgba(255,90,31,.55)}
 .empty{border:1px dashed var(--line);border-radius:3px;padding:28px 16px;margin:0 0 14px}
 #list{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:none;margin:0 -16px}
+#list{align-items:flex-start;overflow-y:hidden;overflow-anchor:none} /* each list keeps its own height + scroll spot (see PANESCROLL) */
 #list::-webkit-scrollbar{display:none}
 .pane{flex:0 0 100%;scroll-snap-align:start;padding:0 16px;min-height:50vh}
 #tabs{display:flex;gap:6px;margin:12px 0 0;padding:0}
@@ -1011,7 +1012,7 @@ $("qx").addEventListener("click",function(){$("q").value="";setQ("");render();tr
 $("risk").addEventListener("input",function(){$("riskVal").textContent=$("risk").value});
 $("idea").addEventListener("change",syncIdea);
 function openForm(t){$("ft").textContent=t;document.body.classList.add("adding");window.scrollTo(0,0);lockAll();setWheels();requestAnimationFrame(setWheels)}
-function closeForm(){document.body.classList.remove("adding");fitBig();window.scrollTo(0,0);var L=$("list");L.scrollLeft=cur*L.clientWidth;syncTabs()}
+function closeForm(){document.body.classList.remove("adding");fitBig();window.scrollTo(0,0);var L=$("list");L.scrollLeft=cur*L.clientWidth;syncTabs();if(typeof PANES!=="undefined"&&PANES){PANES.top();PANES.sync()}}
 $("fab").addEventListener("click",function(){reset();if(cur===0){$("idea").checked=true;syncIdea()}openForm("New solargraph")});
 $("cancel").addEventListener("click",function(){reset();closeForm()});
 function syncTabs(){document.querySelectorAll("#tabs button").forEach(function(b,n){b.className=n===cur?"on":""})}
@@ -1030,6 +1031,27 @@ L.addEventListener("scroll",hide,{passive:true});window.addEventListener("scroll
 function setPane(n,smooth){cur=n;var L=$("list");L.scrollTo({left:n*L.clientWidth,behavior:smooth?"smooth":"auto"});syncTabs()}
 document.querySelectorAll("#tabs button").forEach(function(b,n){b.addEventListener("click",function(){setPane(n,true)})});
 $("list").addEventListener("scroll",function(){if(document.body.classList.contains("adding"))return;var n=Math.round(this.scrollLeft/this.clientWidth);if(n!==cur){cur=n;syncTabs()}});
+/* PANESCROLL: the three lists share the page scroll, so each one remembers where you were.
+   The page is only as tall as the list you are on; while swiping, the other lists are shifted
+   so they already show their own remembered spot, and when the swipe lands the page jumps there
+   in the same frame (no visible jump). */
+var PANES=(function(){var L=$("list"),pos=[0,0,0],shown=null,tmr=0,raf=0;
+  function P(){return L.children}
+  function maxY(i){var p=P()[i];if(!p)return 0;var top=L.getBoundingClientRect().top+window.scrollY,after=document.documentElement.scrollHeight-(top+L.offsetHeight);return Math.max(0,top+p.offsetHeight+after-window.innerHeight)}
+  function want(i){return Math.max(0,Math.min(pos[i],maxY(i)))}
+  function shift(){raf=0;var y=window.scrollY;for(var i=0;i<P().length;i++){P()[i].style.transform=(i===shown||shown===null)?"":"translateY("+(y-want(i))+"px)"}}
+  function fitH(){var p=P()[shown];if(p&&p.offsetHeight)L.style.height=p.offsetHeight+"px";else L.style.height=""}
+  function land(n){if(document.body.classList.contains("adding")||n===shown||!P()[n])return;
+    if(shown!==null)pos[shown]=window.scrollY;var y=want(n);shown=n;fitH();shift();window.scrollTo(0,y)}
+  function sync(){shown=cur;fitH();shift()}
+  L.addEventListener("scroll",function(){if(shown===null)return;var w=L.clientWidth,n=Math.round(L.scrollLeft/w);
+    if(!raf)raf=requestAnimationFrame(shift);clearTimeout(tmr);
+    if(Math.abs(L.scrollLeft-n*w)<2)land(n);else tmr=setTimeout(function(){var m=Math.round(L.scrollLeft/L.clientWidth);if(Math.abs(L.scrollLeft-m*L.clientWidth)<2)land(m)},150)},{passive:true});
+  window.addEventListener("scroll",function(){if(!raf)raf=requestAnimationFrame(shift)},{passive:true});
+  if(window.ResizeObserver){var ro=new ResizeObserver(function(){if(shown!==null){fitH();shift()}});for(var i=0;i<P().length;i++)ro.observe(P()[i])}
+  window.addEventListener("resize",function(){if(shown!==null){fitH();shift()}});
+  return {sync:sync,top:function(){pos=[0,0,0]},_pos:function(){return pos}};
+})();
 function backupData(full){
   return JSON.stringify({app:"solargraphs",version:1,photos:!!full,items:items.map(function(i){var o=Object.assign({},i);if(full){if(!o.photo&&pstore[i.id])o.photo=pstore[i.id]}else o.photo=null;return o}),gallery:full?gal.map(function(g){return {id:g.id,ts:g.ts,link:g.link,thumb:g.thumb,w:g.w,h:g.h,full:(g.full&&g.full.indexOf("data:")!==0)?g.full:undefined}}):gal.map(function(g){return {id:g.id,ts:g.ts,link:g.link,w:g.w,h:g.h}})});
 }
@@ -2044,7 +2066,7 @@ try{if(!NOHINTS&&!localStorage.getItem(KEY+"-guide")&&!localStorage.getItem(KEY)
 function setHints(on,msg){document.body.classList.toggle("showhints",on);var b=$("formHelp");b.classList.toggle("on",on);b.setAttribute("aria-pressed",on?"true":"false");try{localStorage.setItem(KEY+"-hints",on?"1":"0")}catch(e){}if(msg)toast(on?"Descriptions shown.":"Descriptions hidden.")}
 try{setHints(localStorage.getItem(KEY+"-hints")==="1",false)}catch(e){}
 $("formHelp").addEventListener("click",function(){setHints(!document.body.classList.contains("showhints"),true)});
-load();if(split()){try{localStorage.setItem(KEY,JSON.stringify(items))}catch(e){}}snapSigs();gload();gSnap();reset();render();renderGallery();setPane(1,false);initCloud();
+load();if(split()){try{localStorage.setItem(KEY,JSON.stringify(items))}catch(e){}}snapSigs();gload();gSnap();reset();render();renderGallery();setPane(1,false);PANES.sync();initCloud();
 photosInit(function(){syncInit();render();renderGallery();setTimeout(adoptPhotos,1500)});
 var adoptTried={};
 function adoptPhotos(){
@@ -2065,7 +2087,7 @@ var lastDay=ymd();function dayCheck(){if(ymd()!==lastDay){lastDay=ymd();dateMax(
 </script>
 <!-- DEV BUILD LIGHT (temporary, remove later): colour changes with every deploy -->
 <div id="devLight" aria-hidden="true" style="position:absolute;top:1px;right:23px;width:8px;height:8px;border-radius:50%;z-index:9999;pointer-events:none;box-shadow:0 0 6px currentColor;background:currentColor"></div>
-<script>try{document.getElementById("bar").appendChild(document.getElementById("devLight"))}catch(e){}var DEVBUILD=25;(function(){var c=["#ff3b30","#0a84ff","#30d158","#bf5af2","#ffd60a"];document.getElementById("devLight").style.color=c[DEVBUILD%5]})();</script>
+<script>try{document.getElementById("bar").appendChild(document.getElementById("devLight"))}catch(e){}var DEVBUILD=26;(function(){var c=["#ff3b30","#0a84ff","#30d158","#bf5af2","#ffd60a"];document.getElementById("devLight").style.color=c[DEVBUILD%5]})();</script>
 <!-- /DEV BUILD LIGHT -->
 </body>
 </html>
